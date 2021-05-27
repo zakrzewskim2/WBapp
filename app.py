@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import dash
+from dash_bootstrap_components._components.Col import Col
 from dash_bootstrap_components._components.Row import Row
 import dash_core_components as dcc
 import dash_html_components as html
@@ -15,6 +16,7 @@ from joblib import load
 import visdcc
 import base64
 import json
+import math
 
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,48 +24,54 @@ THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(THIS_FOLDER, 'assets', 'stops_in_rejon.json'), encoding='utf8') as json_file:
     stops_in_rejon = json.load(json_file)
 
+with open(os.path.join(THIS_FOLDER, 'assets', 'schools_in_rejon.json'), encoding='utf8') as json_file:
+    schools_in_rejon = json.load(json_file)
+
+schools_with_progi = pd.read_csv(os.path.join(THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
+
 METRIC_MAPPING = [
     {'label': 'procentowa dostępność w czasie', 'value': 'pdwc'},
     {'label': 'metryka Maćkowa', 'value': 'mm'}
 ]
 
-map_type_options = ['Active companies', '% of terminated companies']
-external_scripts = [
-    'https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js'
-]
-# Treemap init
 
 app = dash.Dash(__name__, external_stylesheets=[
     dbc.themes.BOOTSTRAP,
     './styles.css',
-], external_scripts=external_scripts)
+])
 
 server = app.server
 
 
-def generate_table(dataframe, max_rows=26):
+def generate_table(dict, max_rows=26):
     return html.Table(
         # Header
         [html.Tr([html.Th(col, style={
-            "border" : "1px solid black"
-        }) for col in dataframe.columns],style={
-            "border" : "1px solid black"
-        })] +
+            "border": "1px solid black",
+            'text-align' : 'center'
+        }) for col in dict.keys()]
+        )] +
         # Body
-        [html.Tr([
-            html.Td(dataframe.iloc[i][col],style={
-            "border" : "1px solid black"
-        }) for col in dataframe.columns
-        ],style={
-            "border" : "1px solid black"
-        }) for i in range(min(len(dataframe), max_rows))],
-        style={
-            "border" : "1px solid black"
-        }
+        [html.Tr(
+        [html.Td([
+            html.Table(
+                [html.Tr([html.Th(row["Nazwa"])], style={
+                        "border": "1px solid black",
+                    })] +
+                    # Body
+                    [html.Tr([
+                        html.Td(index, style={"border": "1px solid black"}),
+                        html.Td(value, style={"border": "1px solid black"})
+                    ], style={
+                        "border": "1px solid black"
+                    }) for index, value in row.items()]
+            ) for _, row in dict[col].items()
+        ], style={
+            "border": "1px solid black",
+            'vertical-align' : 'top'
+        }) for col in dict.keys()])]
     )
 
-
-df = pd.DataFrame({"asd": [2, 21], "asdf": [3, 5]})
 
 app.layout = html.Div(
     children=[
@@ -115,11 +123,63 @@ app.layout = html.Div(
                                            ]
                                            ),
                                    dbc.Col(
-                                       generate_table(df),
+                                       children=[
+                                           html.Div(
+                                               children=[
+                                                   dbc.Row(
+                                                       html.Plaintext(
+                                                           "Informacje o przystankach",
+                                                           style={
+                                                               'font': '14pt Arial Black',
+                                                               'margin': "0px 0px 0px 35px",
+                                                           }
+                                                       )
+                                                   ),
+                                                   dbc.Row(
+                                                       id="stops-info-table",
+                                                       style={
+                                                           'margin': "0px 0px 0px 35px",
+                                                           'width': '100%',
+                                                       }
+                                                   )
+                                               ],
+                                               style={
+                                                   'border': '1px solid black',
+                                                    'float': 'left',
+                                                    'width': '30%',
+                                               }
+                                           ),
+                                           html.Div(
+                                               children=[
+                                                   dbc.Row(
+                                                       html.Plaintext(
+                                                           "Informacje o szkołach",
+                                                           style={
+                                                               'font': '14pt Arial Black',
+                                                               'margin': "0px 0px 0px 35px",
+                                                           }
+                                                       )
+                                                   ),
+                                                   dbc.Row(
+                                                       id="schools-info-table",
+                                                       style={
+                                                           'margin': "0px 0px 0px 35px",
+                                                           'width': '100%',
+                                                       }
+                                                   ),
+                                                   
+                                               ],
+                                               style={
+                                                   'border': '1px solid black',
+                                                    'float': 'left',
+                                                    'width': '70%',
+                                               }
+                                           )
+                                       ],
                                        style={
-                                           'margin': "0px 0px 0px 30px"
-                                       },
-                                       id="info-table"
+                                           'border': '1px solid black',
+                                           'overflow': 'hidden',
+                                       }
                                    )
                                ]),
                            dbc.Row(
@@ -156,7 +216,8 @@ app.layout = html.Div(
 @app.callback(
     [
         Output('map', 'figure'),
-        Output('info-table', 'children'),
+        Output('schools-info-table', 'children'),
+        Output('stops-info-table', 'children'),
     ],
     [
         Input('metric', 'value'),
@@ -165,20 +226,25 @@ app.layout = html.Div(
     ])
 def update_map(metric, options, selceted_region):
     stops = {}
-    max_len = 0
+    schools = {}
     for i in selceted_region:
-        if str(i) not in stops_in_rejon:
-            stops[i] = []
-            continue
-        stops[i] = stops_in_rejon[str(i)]
-        if len(stops_in_rejon[str(i)]) > max_len:
-            max_len = len(stops_in_rejon[str(i)])
-    #print("outer dupa",stops)
-    for k,v in stops.items():
-        v.extend([""]*(max_len-len(v)))
-#        print("inner dupa",stops)
+        try:
+            stops[i] = {}
+            for stop in stops_in_rejon[str(i)]:
+                stops[i][stop] = pd.Series({"Nazwa": "n/a", "nr": stop})
+        except:
+            stops[i] = {}
+        try:
+            schools[i] = {}
+            for school in schools_in_rejon[str(i)]:
+                schools[i][school] = schools_with_progi.iloc[school] #schools_in_rejon[str(i)]
+        except:
+            schools[i] = {}
+            
+    # for _, v in stops.items():
+    #     v.extend([""]*(stops_max_len-len(v)))
 
-    return build_map(metric, options, selceted_region), generate_table(pd.DataFrame(stops))
+    return build_map(metric, options, selceted_region), generate_table(schools), generate_table(stops)
 
 
 @app.callback(
