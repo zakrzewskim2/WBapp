@@ -1,0 +1,121 @@
+.left {
+  background: grey;
+}
+
+.right {
+  background: black;
+}
+
+.screen-height {
+  height: 100vh;
+}
+
+.section {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.year-section{
+  height: 10%;
+}
+
+.iBXht{
+    width: 100% !important;
+}
+
+.top {
+  background: #ffffff;
+  height: 60%;
+  width: 100%;
+}
+.bottom {
+  height: 30%;
+  background: #ffffff;
+  width: 100%;
+}
+
+.fill-height{
+ flex: 1 1 auto;
+}
+
+.box {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+#year{
+  margin: 2vh 0 0 7vw;
+  font-size: 2rem;
+}
+
+#year-slider{
+  margin: 3vh 0 0 0;
+}
+
+#map-type-radiobuttons{
+  display: inline-block;
+  margin: 0.15rem 0 0 1rem;
+}
+
+.map-type-radiobuttons-items{
+    margin: 0 0 0 1rem;
+}
+
+#start-tour{
+    margin: 1rem 0 0 1rem;
+}
+
+#prediction-header{
+  padding: 5vh 0 5vh 0;
+  font-weight: bold;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #5c7fba !important;
+  border-color: #5f6690 !important;
+}
+
+.btn-primary:hover {
+  color: #fff;
+  background-color: #5f6690 !important;
+  border-color: #00008b !important;
+}
+
+
+#pred-output{
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#prediction-value-text{
+    margin-top: 100px;
+    margin-bottom: 100px;
+}
+
+#prediction-graph-div{
+    flex: 0;
+    width: 95%;
+}
+
+@media only screen and (max-height: 900px) {
+  #pred-output{
+    flex-direction: row;
+  }
+
+  #prediction-graph-div{
+    flex: 1;
+    }
+
+  #prediction-value-text{
+    margin-top: 0px;
+    margin-bottom: 0px;
+    }
+}
