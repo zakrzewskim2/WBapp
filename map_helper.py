@@ -19,22 +19,20 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'stops_in_rejon.json'), encoding='
 schools_in_rejon = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_in_rejon.csv'))
 
-access_mm = pd.read_csv("assets/metrics/access_mm.csv")
-access_pdwc = pd.read_csv("assets/metrics/access_pdwc.csv")
+access_metrics = {}
 
+for t in os.listdir(os.path.join(THIS_FOLDER, 'assets/metrics')):
+    access_metrics[t[:-4]] = pd.read_csv(os.path.join(THIS_FOLDER, 'assets/metrics', t)) 
 
 def build_map(metric, options, selceted_region):
-    if metric == "mm":
-        access = access_mm
-    else:
-        access = access_pdwc
 
+    access = access_metrics[metric]
 
     gray_colorscale = [[0, 'gray'],
                     [1, 'gray']]
     fig = go.Figure()
 
-    if metric != "mm":
+    if "percentage" in metric:
         str_access = access.assign(accessibility_index = np.where(access.accessibility_index == -1, "n/a", (access.accessibility_index*100).round(2).astype(str) + "%"))
     else:
         str_access = access.assign(accessibility_index = np.where(access.accessibility_index == -1, "n/a", (access.accessibility_index).round(3).astype(str)))

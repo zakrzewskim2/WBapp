@@ -7,6 +7,7 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 from dash.dependencies import Input, Output, State
+from dash_html_components.Div import Div
 import pandas as pd
 import numpy as np
 from plotly.graph_objs.layout import Margin
@@ -30,8 +31,32 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'schools_in_rejon.json'), encoding
 schools_with_progi = pd.read_csv(os.path.join(THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
 
 METRIC_MAPPING = [
-    {'label': 'procentowa dostępność w czasie', 'value': 'pdwc'},
-    {'label': 'metryka Maćkowa', 'value': 'mm'}
+    {'label' : 'metric_new_metric_all_30', 'value' : 'metric_new_metric_all_30'},
+    {'label' : 'metric_percentage_all_30', 'value' : 'metric_percentage_all_30'},
+    {'label' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-False_thresholds-False', 'value' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-False_thresholds-False'},
+    {'label' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-False_thresholds-True', 'value' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-False_thresholds-True'},
+    {'label' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-True_thresholds-False', 'value' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-True_thresholds-False'},
+    {'label' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-True_thresholds-True', 'value' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-True_thresholds-True'},
+    {'label' : 'metric_new_metric_Liceumogólnokształcące_weight-False_thresholds-False', 'value' : 'metric_new_metric_Liceumogólnokształcące_weight-False_thresholds-False'},
+    {'label' : 'metric_new_metric_Liceumogólnokształcące_weight-False_thresholds-True', 'value' : 'metric_new_metric_Liceumogólnokształcące_weight-False_thresholds-True'},
+    {'label' : 'metric_new_metric_Liceumogólnokształcące_weight-True_thresholds-False', 'value' : 'metric_new_metric_Liceumogólnokształcące_weight-True_thresholds-False'},
+    {'label' : 'metric_new_metric_Liceumogólnokształcące_weight-True_thresholds-True', 'value' : 'metric_new_metric_Liceumogólnokształcące_weight-True_thresholds-True'},
+    {'label' : 'metric_new_metric_Szkołapodstawowa_weight-False_thresholds-False', 'value' : 'metric_new_metric_Szkołapodstawowa_weight-False_thresholds-False'},
+    {'label' : 'metric_new_metric_Szkołapodstawowa_weight-False_thresholds-True', 'value' : 'metric_new_metric_Szkołapodstawowa_weight-False_thresholds-True'},
+    {'label' : 'metric_new_metric_Szkołapodstawowa_weight-True_thresholds-False', 'value' : 'metric_new_metric_Szkołapodstawowa_weight-True_thresholds-False'},
+    {'label' : 'metric_new_metric_Szkołapodstawowa_weight-True_thresholds-True', 'value' : 'metric_new_metric_Szkołapodstawowa_weight-True_thresholds-True'},
+    {'label' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-15', 'value' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-15'},
+    {'label' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-30', 'value' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-30'},
+    {'label' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-60', 'value' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-60'},
+    {'label' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-90', 'value' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-90'},
+    {'label' : 'metric_percentage_metric_Liceumogólnokształcące_time-15', 'value' : 'metric_percentage_metric_Liceumogólnokształcące_time-15'},
+    {'label' : 'metric_percentage_metric_Liceumogólnokształcące_time-30', 'value' : 'metric_percentage_metric_Liceumogólnokształcące_time-30'},
+    {'label' : 'metric_percentage_metric_Liceumogólnokształcące_time-60', 'value' : 'metric_percentage_metric_Liceumogólnokształcące_time-60'},
+    {'label' : 'metric_percentage_metric_Liceumogólnokształcące_time-90', 'value' : 'metric_percentage_metric_Liceumogólnokształcące_time-90'},
+    {'label' : 'metric_percentage_metric_Szkołapodstawowa_time-15', 'value' : 'metric_percentage_metric_Szkołapodstawowa_time-15'},
+    {'label' : 'metric_percentage_metric_Szkołapodstawowa_time-30', 'value' : 'metric_percentage_metric_Szkołapodstawowa_time-30'},
+    {'label' : 'metric_percentage_metric_Szkołapodstawowa_time-60', 'value' : 'metric_percentage_metric_Szkołapodstawowa_time-60'},
+    {'label' : 'metric_percentage_metric_Szkołapodstawowa_time-90', 'value' : 'metric_percentage_metric_Szkołapodstawowa_time-90'},
 ]
 
 
@@ -43,8 +68,8 @@ app = dash.Dash(__name__, external_stylesheets=[
 server = app.server
 
 
-def generate_table(dict, max_rows=26):
-    return html.Table(
+def generate_table(dict, width):
+    return html.Div([html.Table(
         # Header
         [html.Tr([html.Th(col, style={
             "border": "1px solid black",
@@ -54,7 +79,7 @@ def generate_table(dict, max_rows=26):
         # Body
         [html.Tr(
         [html.Td([
-            html.Table(
+                html.Table(
                 [html.Tr([html.Th(row["Nazwa"])], style={
                         "border": "1px solid black",
                     })] +
@@ -68,9 +93,16 @@ def generate_table(dict, max_rows=26):
             ) for _, row in dict[col].items()
         ], style={
             "border": "1px solid black",
-            'vertical-align' : 'top'
-        }) for col in dict.keys()])]
-    )
+            'vertical-align' : 'top',
+            'width' : width
+        }
+        ) for col in dict.keys()])]
+    )            ], style={
+                'height' : '500px',
+                'width' : width,
+                'overflow' : 'scroll'
+            }
+        )
 
 
 app.layout = html.Div(
@@ -191,7 +223,7 @@ app.layout = html.Div(
                                                dcc.Dropdown(
                                                    id='metric',
                                                    options=METRIC_MAPPING,
-                                                   value='mm',
+                                                   value='metric_new_metric_all_30',
                                                )
                                            ]
                                            )
@@ -237,14 +269,11 @@ def update_map(metric, options, selceted_region):
         try:
             schools[i] = {}
             for school in schools_in_rejon[str(i)]:
-                schools[i][school] = schools_with_progi.iloc[school] #schools_in_rejon[str(i)]
+                schools[i][school] = schools_with_progi.iloc[school] 
         except:
             schools[i] = {}
-            
-    # for _, v in stops.items():
-    #     v.extend([""]*(stops_max_len-len(v)))
 
-    return build_map(metric, options, selceted_region), generate_table(schools), generate_table(stops)
+    return build_map(metric, options, selceted_region), generate_table(schools, "820px"), generate_table(stops, "340px")
 
 
 @app.callback(
