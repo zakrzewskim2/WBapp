@@ -1,3 +1,4 @@
+#%%
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
@@ -19,12 +20,15 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'stops_in_rejon.json'), encoding='
 schools_in_rejon = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_in_rejon.csv'))
 
+schools_with_progi = pd.read_csv(os.path.join(
+    THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
+
 access_metrics = {}
 
 for t in os.listdir(os.path.join(THIS_FOLDER, 'assets/metrics')):
     access_metrics[t[:-4]] = pd.read_csv(os.path.join(THIS_FOLDER, 'assets/metrics', t)) 
-
-def build_map(metric, options, selceted_region):
+#%%
+def build_map(metric, options, schools_options, selceted_region):
 
     access = access_metrics[metric]
 
@@ -100,15 +104,52 @@ def build_map(metric, options, selceted_region):
         )
 
     if "schools" in options:
-        fig.add_scattermapbox(
-            lat=schools_in_rejon['lat'],
-            lon=schools_in_rejon['lon'],
+        if 'all' in schools_options:
+            selected_schools = schools_in_rejon
+            fig.add_scattermapbox(
+            lat=selected_schools['lat'],
+            lon=selected_schools['lon'],
             showlegend=False,
             hoverinfo='skip',
             marker=go.scattermapbox.Marker(
                 color="blue"
-            ),
-        )
+                )
+            )
+        else:
+            if 'school_lic' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Unnamed: 0"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Liceum ogólnokształcące"]["Unnamed: 0"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+            if 'school_podst' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Unnamed: 0"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Szkoła podstawowa"]["Unnamed: 0"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+            if 'school_tech' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Unnamed: 0"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Technikum"]["Unnamed: 0"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+
     if "subway" in options:
         subway_pos = stops_pos.iloc[np.where(
             stops_pos.index.astype(str).str.zfill(4).str.startswith("0"))]
@@ -121,22 +162,6 @@ def build_map(metric, options, selceted_region):
                 color="black"
             ),
         )
-
-    # for i, color in zip([black_indexes, white_indexes], ["black", "white"]):
-    #     fig.add_scattermapbox(
-    #         lat=df.lat[i],
-    #         lon=df.lon[i],
-    #         mode='text',
-    #         text=label_text[i],
-    #         textfont={
-    #             "color": color,
-    #             "family": 'Verdana, sans-serif',
-    #             "size": 12,
-    #         },
-    #         name='',
-    #         showlegend=False,
-    #         hoverinfo='skip'
-    #     )
 
     fig.update_layout(
         margin={"r": 0, "t": 0, "l": 0, "b": 35},

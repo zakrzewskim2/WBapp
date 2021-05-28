@@ -117,7 +117,6 @@ app.layout = html.Div(
                        children=[
                            dbc.Row(
                                id='map-filters',
-                               no_gutters=True,
                                children=[
                                    html.H5(
                                        'Filtry:'),
@@ -134,7 +133,35 @@ app.layout = html.Div(
                                        ],
                                        value=[]
                                    )
-                               ]
+                               ],
+                               style={
+                                   'display' : 'block'
+                               }
+                           ),
+                           dbc.Row(
+                               id='schools-filters',
+                               children=[
+                                   html.H5(
+                                       'Filtry szkoły:'),
+                                   dcc.Checklist(
+                                       id='school-type-checklist',
+                                       labelClassName='school-type-checklist-items',
+                                       options=[
+                                           {'label': 'Wszystkie',
+                                            'value': 'all'},
+                                           {'label': 'Szkoły podstawowe',
+                                            'value': 'school_podst'},
+                                           {'label': 'Licea ogólnokształcące',
+                                            'value': 'school_lic'},
+                                           {'label': 'Szkoły techniczne',
+                                            'value': 'school_tech'}
+                                       ],
+                                       value=['all']
+                                   )
+                               ],
+                               style={
+                                   'display' : 'none'
+                               }
                            ),
                            dbc.Row(
                                className='top',
@@ -254,9 +281,10 @@ app.layout = html.Div(
     [
         Input('metric', 'value'),
         Input('map-type-checklist', 'value'),
+        Input('school-type-checklist', 'value'),
         Input('selected-region-indices', 'children'),
     ])
-def update_map(metric, options, selceted_region):
+def update_map(metric, options,schools_options, selceted_region):
     stops = {}
     schools = {}
     for i in selceted_region:
@@ -267,13 +295,24 @@ def update_map(metric, options, selceted_region):
         except:
             stops[i] = {}
         try:
-            schools[i] = {}
+            schools[i] = {} 
             for school in schools_in_rejon[str(i)]:
                 schools[i][school] = schools_with_progi.iloc[school] 
         except:
             schools[i] = {}
 
-    return build_map(metric, options, selceted_region), generate_table(schools, "820px"), generate_table(stops, "340px")
+    return build_map(metric, options, schools_options, selceted_region), generate_table(schools, "820px"), generate_table(stops, "340px")
+
+@app.callback(
+    Output('schools-filters', 'style'),
+    [
+        Input('map-type-checklist', 'value')
+    ])
+def filter_update(selected_filters):
+    if 'schools' in selected_filters:
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
 
 
 @app.callback(
