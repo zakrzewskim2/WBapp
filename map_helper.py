@@ -56,7 +56,7 @@ def build_map(metric, options, schools_options, selceted_region):
                                  zmin=0,
                                  showscale=False,
                                  featureidkey="properties.index",
-                                 marker={'opacity': 0.7}, below=True)
+                                 marker={'opacity': 0.7}, below=False)
         fig.add_choroplethmapbox(colorscale='Balance', geojson=rejony_borders, customdata=customdata,
                                  hovertemplate=hovertemplate,
                                  locations=access_true["index"],
@@ -64,7 +64,7 @@ def build_map(metric, options, schools_options, selceted_region):
                                  zmax=np.max(access_true["accessibility_index"]),
                                  zmin=0,
                                  featureidkey="properties.index",
-                                 showscale=True, marker={'opacity': 0.7}, below=True)
+                                 showscale=True, marker={'opacity': 0.7}, below=False)
     else:
         fig.add_choroplethmapbox(colorscale=gray_colorscale, geojson=rejony_borders, customdata=customdata,
                                  hovertemplate=hovertemplate,
@@ -77,7 +77,7 @@ def build_map(metric, options, schools_options, selceted_region):
                                  selected={'marker': {'opacity': 0.7}},
                                  unselected={'marker': {'opacity': 0.2}},
                                  showscale=False,
-                                 selectedpoints=selceted_region, below=True)
+                                 selectedpoints=selceted_region, below=False)
         fig.add_choroplethmapbox(colorscale='Balance', geojson=rejony_borders, customdata=customdata,
                                  hovertemplate=hovertemplate,
                                  locations=access_true["index"],
@@ -89,31 +89,26 @@ def build_map(metric, options, schools_options, selceted_region):
                                  showscale=True,
                                  selected={'marker': {'opacity': 0.7}},
                                  unselected={'marker': {'opacity': 0.2}},
-                                 selectedpoints=selceted_region, below=True)
-    if "stops" in options:
-        if "subway" in options:
-            stops = stops_pos.iloc[np.where(~stops_pos.index.astype(
-                str).str.zfill(4).str.startswith("0"))]
-        else:
-            stops = stops_pos
-        fig.add_scattermapbox(
-            lat=stops[1],
-            lon=stops[0],
-            showlegend=False,
-            hoverinfo='skip'
-        )
+                                 selectedpoints=selceted_region, below=False)
+
 
     if "schools" in options:
         if 'all' in schools_options:
             selected_schools = schools_in_rejon
             fig.add_scattermapbox(
-            lat=selected_schools['lat'],
-            lon=selected_schools['lon'],
-            showlegend=False,
-            hoverinfo='skip',
-            marker=go.scattermapbox.Marker(
-                color="blue"
-                )
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                mode='text',
+                text=".",
+                textfont={
+                    "color": "blue",
+                    "family": 'Verdana, sans-serif',
+                    "size": 12,
+                },
+                name='',
+                showlegend=False,
+                hoverinfo='skip',
+                below=True
             )
         else:
             if 'school_lic' in schools_options:
@@ -161,7 +156,22 @@ def build_map(metric, options, schools_options, selceted_region):
             marker=go.scattermapbox.Marker(
                 color="black"
             ),
+            
         )
+
+    if "stops" in options:
+        if "subway" in options:
+            stops = stops_pos.iloc[np.where(~stops_pos.index.astype(
+                str).str.zfill(4).str.startswith("0"))]
+        else:
+            stops = stops_pos
+        fig.add_scattermapbox(
+            lat=stops[1],
+            lon=stops[0],
+            showlegend=False,
+            hoverinfo='skip'
+        )
+
 
     fig.update_layout(
         margin={"r": 0, "t": 0, "l": 0, "b": 35},
