@@ -98,17 +98,11 @@ def build_map(metric, options, schools_options, selceted_region):
             fig.add_scattermapbox(
                 lat=selected_schools['lat'],
                 lon=selected_schools['lon'],
-                mode='text',
-                text=".",
-                textfont={
-                    "color": "blue",
-                    "family": 'Verdana, sans-serif',
-                    "size": 12,
-                },
-                name='',
                 showlegend=False,
                 hoverinfo='skip',
-                below=True
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
             )
         else:
             if 'school_lic' in schools_options:
