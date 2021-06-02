@@ -32,62 +32,46 @@ schools_with_progi = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
 
 METRIC_MAPPING = [
-    {'label': 'nowa', 'value': 'new'},
-    {'label': 'procentowa', 'value': 'percentage'}
+    {'label': 'nowa', 'value': 'new_metric'},
+    {'label': 'procentowa', 'value': 'percentage_metric'}
 ]
 
 METRIC_SCHOOL_TYPE_MAPPING = [
-    {'label': 'dowolnych', 'value': 'all'},
-    {'label': 'podstawowych', 'value': 'elementary'},
-    {'label': 'liceów ogólnokształcących', 'value': 'highschool'},
-    {'label': 'podstawowych i liceów', 'value': 'elem+high'},
+    {'label': 'dowolnych szkół', 'value': 'ALL'},
+    {'label': 'szkół podstawowych', 'value': 'POD'},
+    {'label': 'liceów ogólnokształcących', 'value': 'LIC'},
+    {'label': 'techników', 'value': 'TEC'},
+    {'label': 'szkół zawodowych', 'value': 'ZAW'},
+    {'label': 'szkół podstawowych i zawodowych oraz liceów i techników', 'value': 'POD-LIC-ZAW-TEC'},
+    {'label': 'szkół artystycznych', 'value': 'MUZ'},
+    {'label': 'przedszkoli', 'value': 'PRZ'},
+    {'label': 'szkół podstawowych i liceów', 'value': 'POD-LIC'},
+    {'label': 'szkół podstawowych i zawodowych', 'value': 'POD-ZAW'},
+    {'label': 'szkół podstawowych i techników', 'value': 'POD-TEC'},
+    {'label': 'liceów i techników', 'value': 'LIC-TEC'},
+    {'label': 'liceów i szkół zawodowych', 'value': 'LIC-ZAW'},
+    {'label': 'techników i szkół zawodowych', 'value': 'ZAW-TEC'},
+    {'label': 'szkół podstawowych, liceów i techników', 'value': 'POD-LIC-TEC'},
+    {'label': 'szkół podstawowych, zawodowych i techników', 'value': 'POD-ZAW-TEC'},
+    {'label': 'szkół zawodowych, liceów i techników', 'value': 'LIC-ZAW-TEC'},
 ]
 
 METRIC_TIME_MAPPING = [
-    {'label': '15 minut.', 'value': '15'},
-    {'label': '30 minut.', 'value': '30'},
-    {'label': '60 minut.', 'value': '60'},
-    {'label': '90 minut.', 'value': '90'}
+    {'label': '15 minut.', 'value': 'time-15'},
+    {'label': '30 minut.', 'value': 'time-30'},
+    {'label': '60 minut.', 'value': 'time-60'},
+    {'label': '90 minut.', 'value': 'time-90'}
 ]
 
 METRIC_THRESHOLDS_MAPPING = [
-    {'label': 'uwzględniając', 'value': 'true'},
-    {'label': 'pomijając', 'value': 'false'}
+    {'label': 'uwzględniając', 'value': 'thresholds-True'},
+    {'label': 'pomijając', 'value': 'thresholds-False'}
 ]
 
 METRIC_WEIGHT_MAPPING = [
-    {'label': 'ważona', 'value': 'true'},
-    {'label': 'nie ważona', 'value': 'false'}
+    {'label': 'ważona', 'value': 'weight-True'},
+    {'label': 'nie ważona', 'value': 'weight-False'}
 ]
-
-METRIC_FILENAME_MAPPING = {
-	'new_all_false' : 'metric_new_metric_all_30',
-	'percentage_all_30' : 'metric_percentage_metric_all_30',
-	'new_false_elem+high_false' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-False_thresholds-False',
-	'new_false_elem+high_true' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-False_thresholds-True',
-	'new_true_elem+high_false' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-True_thresholds-False',
-	'new_true_elem+high_true' : 'metric_new_metric_Liceumogólnokształcące Szkołapodstawowa_weight-True_thresholds-True',
-	'new_false_highschool_false    ' : 'metric_new_metric_Liceumogólnokształcące_weight-False_thresholds-False',
-	'new_false_highschool_true' : 'metric_new_metric_Liceumogólnokształcące_weight-False_thresholds-True',
-	'new_true_highschool_false' : 'metric_new_metric_Liceumogólnokształcące_weight-True_thresholds-False',
-	'new_true_highschool_true' : 'metric_new_metric_Liceumogólnokształcące_weight-True_thresholds-True',
-	'new_false_elementary_false' : 'metric_new_metric_Szkołapodstawowa_weight-False_thresholds-False',
-	'new_false_elementary_true' : 'metric_new_metric_Szkołapodstawowa_weight-False_thresholds-True',
-	'new_true_elementary_false' : 'metric_new_metric_Szkołapodstawowa_weight-True_thresholds-False',
-	'new_true_elementary_true' : 'metric_new_metric_Szkołapodstawowa_weight-True_thresholds-True',
-	'percentage_elem+high_15' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-15',
-	'percentage_elem+high_30' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-30',
-	'percentage_elem+high_60' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-60',
-	'percentage_elem+high_90' : 'metric_percentage_metric_Liceumogólnokształcące Szkołapodstawowa_time-90',
-	'percentage_highschool_15' : 'metric_percentage_metric_Liceumogólnokształcące_time-15',
-	'percentage_highschool_30' : 'metric_percentage_metric_Liceumogólnokształcące_time-30',
-	'percentage_highschool_60' : 'metric_percentage_metric_Liceumogólnokształcące_time-60',
-	'percentage_highschool_90' : 'metric_percentage_metric_Liceumogólnokształcące_time-90',
-	'percentage_elementary_15' : 'metric_percentage_metric_Szkołapodstawowa_time-15',
-	'percentage_elementary_30' : 'metric_percentage_metric_Szkołapodstawowa_time-30',
-	'percentage_elementary_60' : 'metric_percentage_metric_Szkołapodstawowa_time-60',
-	'percentage_elementary_90' : 'metric_percentage_metric_Szkołapodstawowa_time-90',
-}
 
 app = dash.Dash(__name__, external_stylesheets=[
     dbc.themes.BOOTSTRAP,
@@ -278,9 +262,9 @@ app.layout = html.Div(
                                    dcc.Dropdown(
                                        id='metric',
                                        options=METRIC_MAPPING,
-                                       value='percentage',
+                                       value='percentage_metric',
                                        style=dict(
-                                           width=130,
+                                           width=110,
                                            display='inline-block',
                                            verticalAlign="middle",
                                            textAlign="left"
@@ -289,18 +273,18 @@ app.layout = html.Div(
                                     dcc.Dropdown(
                                        id='metric-weight',
                                        options=METRIC_WEIGHT_MAPPING,
-                                       value='true',
+                                       value='weight-True',
                                        style=dict(display='none')
                                    ),
 
-                                   html.Plaintext(", dla szkół ", style={
+                                   html.Plaintext(", dla ", style={
                                        'display': 'inline-block', 'font-size': '12pt'}),
                                    dcc.Dropdown(
                                        id='metric-school-type',
                                        options=METRIC_SCHOOL_TYPE_MAPPING,
-                                       value='elementary',
+                                       value='ALL',
                                        style=dict(
-                                           width=230,
+                                           width=460,
                                            display='inline-block',
                                            verticalAlign="middle",
                                            textAlign="left"
@@ -311,13 +295,13 @@ app.layout = html.Div(
                                    dcc.Dropdown(
                                        id='metric-time',
                                        options=METRIC_TIME_MAPPING,
-                                       value='30'
+                                       value='time-30'
                                    ),
 
                                     dcc.Dropdown(
                                        id='metric-thresholds',
                                        options=METRIC_THRESHOLDS_MAPPING,
-                                       value='true',
+                                       value='thresholds-True',
                                        style=dict(display='none')
                                    ),
                                     html.Plaintext(" progi.", id="plaintext-thresholds", style=dict(display='none'))
@@ -371,8 +355,8 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
                 schools[i][school] = schools_with_progi.iloc[school]
         except:
             schools[i] = {}
-    selected_metric = "_".join([metric, metric_type, metric_time]) if metric == "percentage" else "_".join([metric, metric_weight, metric_type, metric_thresholds])
-    return build_map(METRIC_FILENAME_MAPPING[selected_metric], options, schools_options, selceted_region), generate_table(schools, "820px"), generate_table(stops, "340px")
+    selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(["metric", metric, metric_type, metric_weight, metric_thresholds])
+    return build_map(selected_metric, options, schools_options, selceted_region), generate_table(schools, "820px"), generate_table(stops, "340px")
 
 
 @app.callback(
@@ -398,18 +382,18 @@ def filter_update(selected_filters):
         Input('metric', 'value')
     ])
 def metric_update(selected_metric):
-    if selected_metric == "percentage":
+    if selected_metric == "percentage_metric":
         return {'display': 'none'}, \
                 {'display': 'inline-block', 'font-size': '12pt'}, \
-                {'width': 195, 'display': 'inline-block', 'verticalAlign': "middle", 'textAlign': "left"}, \
+                {'width': 170, 'display': 'inline-block', 'verticalAlign': "middle", 'textAlign': "left"}, \
                 {'display': 'none'}, \
                 {'display': 'none'}
     else:
-        return {'width': 195, 'display': 'inline-block', 'verticalAlign': "middle", 'textAlign': "left"}, \
+        return {'width': 110, 'display': 'inline-block', 'verticalAlign': "middle", 'textAlign': "left"}, \
                 {'display': 'none'}, \
                 {'display': 'none'}, \
                 {'display': 'inline-block', 'font-size': '12pt'}, \
-                {'width': 195, 'display': 'inline-block', 'verticalAlign': "middle", 'textAlign': "left"}
+                {'width': 170, 'display': 'inline-block', 'verticalAlign': "middle", 'textAlign': "left"}
 
 @app.callback(
     [
