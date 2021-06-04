@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#%%
 import dash
 from dash_bootstrap_components._components.Col import Col
 from dash_bootstrap_components._components.Row import Row
@@ -7,7 +8,9 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 from dash.dependencies import Input, Output, State
+from dash_html_components.Button import Button
 from dash_html_components.Div import Div
+from numpy.lib.shape_base import column_stack
 import pandas as pd
 import numpy as np
 from plotly.graph_objs.layout import Margin
@@ -18,6 +21,7 @@ import visdcc
 import base64
 import json
 import math
+import ast
 
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
@@ -31,11 +35,17 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'schools_in_rejon.json'), encoding
 schools_with_progi = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
 
+stops_info = pd.read_csv(os.path.join(
+    THIS_FOLDER, 'assets', 'stops_info.csv'), encoding='utf-8')
+stops_info = stops_info.astype({'Unnamed: 0':'str'})
+
 METRIC_MAPPING = [
     {'label': 'nowa', 'value': 'new_metric'},
     {'label': 'procentowa', 'value': 'percentage_metric'}
 ]
 
+button_names = []
+#%%
 METRIC_SCHOOL_TYPE_MAPPING = [
     {'label': 'dowolnych szkół', 'value': 'ALL'},
     {'label': 'szkół podstawowych', 'value': 'POD'},
@@ -81,37 +91,43 @@ app = dash.Dash(__name__, external_stylesheets=[
 server = app.server
 
 
-def generate_table(dict, width):
+def generate_table(df_dict, width, name=""):
     return html.Div([html.Table(
         # Header
         [html.Tr([html.Th(col, style={
             "border": "1px solid black",
             'text-align': 'center'
-        }) for col in dict.keys()]
+        }) for col in df_dict.keys()]
         )] +
         # Body
         [html.Tr(
             [html.Td([
                 html.Table(
-                    [html.Tr([html.Th(row["Nazwa"])], style={
-                        "border": "1px solid black",
-                    })] +
+                    [html.Thead(
+                        html.Tr(
+                            html.Th(
+                                html.Button(row["Nazwa"], style={"width":"100%"}, id="collapse_button_" + row["Nazwa"] + name), style={
+                                    "border": "1px solid black",
+                                    'text-align': 'center'},
+                                colSpan=2
+                            )
+                        )
+                    )] +
                     # Body
-                    [html.Tr([
-                        html.Td(index, style={"border": "1px solid black"}),
-                        html.Td(value, style={"border": "1px solid black"})
+                    [html.Tbody([html.Tr([
+                        html.Td(index, style={"border": "1px solid black", "vertical-align" : "top"}),
+                        generate_table(value, "100%", row["Nazwa"]) if type(value) is dict else html.Td(value)
                     ], style={
                         "border": "1px solid black"
-                    }) for index, value in row.items()]
-                ) for _, row in dict[col].items()
+                    }) for index, value in row.items()], style={'display' : 'none', 'width' : '100%'}, id="table_to_collapse_"  + row["Nazwa"] + name)]
+                ) for _, row in df_dict[col].items()
             ], style={
                 "border": "1px solid black",
                 'vertical-align': 'top',
-                'width': width
+                'width': width,
             }
-            ) for col in dict.keys()])]
+            ) for col in df_dict.keys()])]
     )], style={
-        'height': '500px',
         'width': width,
         'overflow': 'scroll'
     }
@@ -218,7 +234,7 @@ app.layout = html.Div(
                                                style={
                                                    'border': '1px solid black',
                                                    'float': 'left',
-                                                   'width': '30%',
+                                                   'width': '50%',
                                                }
                                            ),
                                            html.Div(
@@ -244,7 +260,7 @@ app.layout = html.Div(
                                                style={
                                                    'border': '1px solid black',
                                                    'float': 'left',
-                                                   'width': '70%',
+                                                   'width': '50%',
                                                }
                                            )
                                        ],
@@ -312,7 +328,9 @@ app.layout = html.Div(
                            html.Div(id='selected-region-indices',
                                     style={'display': 'none'}, children=''),
                            html.Div(id='scroll-blocker',
-                                    className='scroll')
+                                    className='scroll'),
+                           html.Div(id='button_ids'),
+                           html.Div(id='empty', style={'display': 'block'})
                        ]
                    ),
                ]
@@ -322,12 +340,37 @@ app.layout = html.Div(
     ]
 )
 
+app.clientside_callback(
+    """
+    function setup_stuff(ids) {
+        for (let i = 0; i < ids.length; i++) {
+            var collapse_button = document.getElementById("collapse_button_" + ids[i].substring(10));
+            collapse_button.addEventListener("click", function() {
+                this.classList.toggle("active");
+                var table_to_collapse = document.getElementById("table_to_collapse_" + ids[i].substring(10));
+                if (table_to_collapse.style.display === "block") {
+                table_to_collapse.style.display = "none";
+                } else {
+                table_to_collapse.style.display = "block";
+                }
+            });
+        }
+        console.log("asd")
+        return 0;
+    }
+    """,
+    [Output("empty", "children")],
+    [   
+        Input("button_ids", "children")
+    ]
+)
 
 @app.callback(
     [
         Output('map', 'figure'),
         Output('schools-info-table', 'children'),
         Output('stops-info-table', 'children'),
+        Output('button_ids', 'children'),
     ],
     [
         Input('metric', 'value'),
@@ -342,21 +385,37 @@ app.layout = html.Div(
 def update_map(metric, metric_weight, metric_type, metric_time, metric_thresholds, options, schools_options, selceted_region):
     stops = {}
     schools = {}
+    button_ids = []
     for i in selceted_region:
         try:
             stops[i] = {}
             for stop in stops_in_rejon[str(i)]:
-                stops[i][stop] = pd.Series({"Nazwa": "n/a", "nr": stop})
+                stops[i][stop] = {}
+                stop_df = stops_info.loc[stops_info["Unnamed: 0"] == str(stop).zfill(4)]
+                stops[i][stop]["Nazwa"] = stop_df["name"].values[0]
+                button_ids.append("button_id_" + stop_df["name"].values[0])
+                stops[i][stop]["Numer"] = stop_df["Unnamed: 0"].values[0]
+                stops[i][stop]["Linie"] = {}
+                for k,v in ast.literal_eval(stop_df["lines"].values[0]).items():
+                    stops[i][stop]["Linie"][k] = {}
+                    stops[i][stop]["Linie"][k]["Informacje"] = {}
+                    stops[i][stop]["Linie"][k]["Informacje"]["Nazwa"] = k
+                    button_ids.append("button_id_" + k + stop_df["name"].values[0])
+                    stops[i][stop]["Linie"][k]["Informacje"]["Typ"] = v["type"]
+                    stops[i][stop]["Linie"][k]["Informacje"]["Godziny odjazdu"] = v["hours"]
+                    stops[i][stop]["Linie"][k]["Informacje"]["Odjazd z przystanku"] = v["direction_from"]
+                    stops[i][stop]["Linie"][k]["Informacje"]["Kierunek"] = v["direction_to"]
         except:
             stops[i] = {}
         try:
             schools[i] = {}
             for school in schools_in_rejon[str(i)]:
                 schools[i][school] = schools_with_progi.iloc[school]
+                button_ids.append("button_id_" + schools_with_progi.iloc[school]["Nazwa"])
         except:
             schools[i] = {}
     selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(["metric", metric, metric_type, metric_weight, metric_thresholds])
-    return build_map(selected_metric, options, schools_options, selceted_region), generate_table(schools, "820px"), generate_table(stops, "340px")
+    return build_map(selected_metric, options, schools_options, selceted_region), generate_table(schools, "590px"), generate_table(stops, "590px"), button_ids
 
 
 @app.callback(
