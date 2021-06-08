@@ -91,7 +91,7 @@ def build_map(metric, options, schools_options, selceted_region):
                                  unselected={'marker': {'opacity': 0.2}},
                                  selectedpoints=selceted_region, below=False)
 
-
+    
     if "schools" in options:
         if 'all' in schools_options:
             selected_schools = schools_in_rejon
@@ -138,7 +138,8 @@ def build_map(metric, options, schools_options, selceted_region):
                     color="blue"
                     )
                 )
-
+    else:
+        fig.add_scattermapbox()
     if "subway" in options:
         subway_pos = stops_pos.iloc[np.where(
             stops_pos.index.astype(str).str.zfill(4).str.startswith("0"))]
@@ -152,7 +153,8 @@ def build_map(metric, options, schools_options, selceted_region):
             ),
             
         )
-
+    else:
+        fig.add_scattermapbox()
     if "stops" in options:
         if "subway" in options:
             stops = stops_pos.iloc[np.where(~stops_pos.index.astype(
@@ -165,7 +167,8 @@ def build_map(metric, options, schools_options, selceted_region):
             showlegend=False,
             hoverinfo='skip'
         )
-
+    else:
+        fig.add_scattermapbox()
 
     fig.update_layout(
         margin={"r": 0, "t": 0, "l": 0, "b": 35},

@@ -94,11 +94,13 @@ server = app.server
 def generate_table(df_dict, width, name=""):
     return html.Div([html.Table(
         # Header
+        [html.Thead(
         [html.Tr([html.Th(col, style={
             "border": "1px solid black",
-            'text-align': 'center'
+            'textAlign': 'center'
         }) for col in df_dict.keys()]
-        )] +
+        )])] +
+        [html.Tbody(
         # Body
         [html.Tr(
             [html.Td([
@@ -108,14 +110,14 @@ def generate_table(df_dict, width, name=""):
                             html.Th(
                                 html.Button(row["Nazwa"], style={"width":"100%"}, id="collapse_button_" + row["Nazwa"] + name), style={
                                     "border": "1px solid black",
-                                    'text-align': 'center'},
+                                    'textAlign': 'center'},
                                 colSpan=2
                             )
                         )
                     )] +
                     # Body
                     [html.Tbody([html.Tr([
-                        html.Td(index, style={"border": "1px solid black", "vertical-align" : "top"}),
+                        html.Td(index, style={"border": "1px solid black", "verticalAlign" : "top"}),
                         generate_table(value, "100%", row["Nazwa"]) if type(value) is dict else html.Td(value)
                     ], style={
                         "border": "1px solid black"
@@ -123,10 +125,10 @@ def generate_table(df_dict, width, name=""):
                 ) for _, row in df_dict[col].items()
             ], style={
                 "border": "1px solid black",
-                'vertical-align': 'top',
+                'verticalAlign': 'top',
                 'width': width,
             }
-            ) for col in df_dict.keys()])]
+            ) for col in df_dict.keys()])])]
     )], style={
         'width': width,
         'overflow': 'scroll'
@@ -274,7 +276,7 @@ app.layout = html.Div(
                                className='bottom',
                                children=[
                                    html.Plaintext("Typ metryki ", style={
-                                       'display': 'inline-block', 'font-size': '12pt'}),
+                                       'display': 'inline-block', 'fontSize': '12pt'}),
                                    dcc.Dropdown(
                                        id='metric',
                                        options=METRIC_MAPPING,
@@ -294,7 +296,7 @@ app.layout = html.Div(
                                    ),
 
                                    html.Plaintext(", dla ", style={
-                                       'display': 'inline-block', 'font-size': '12pt'}),
+                                       'display': 'inline-block', 'fontSize': '12pt'}),
                                    dcc.Dropdown(
                                        id='metric-school-type',
                                        options=METRIC_SCHOOL_TYPE_MAPPING,
@@ -329,8 +331,8 @@ app.layout = html.Div(
                                     style={'display': 'none'}, children=''),
                            html.Div(id='scroll-blocker',
                                     className='scroll'),
-                           html.Div(id='button_ids'),
-                           html.Div(id='empty', style={'display': 'block'})
+                           html.Div(id='all_button_ids', style={'display': 'none'}),
+                           html.Div(id='empty', style={'display': 'none'})
                        ]
                    ),
                ]
@@ -345,23 +347,24 @@ app.clientside_callback(
     function setup_stuff(ids) {
         for (let i = 0; i < ids.length; i++) {
             var collapse_button = document.getElementById("collapse_button_" + ids[i].substring(10));
-            collapse_button.addEventListener("click", function() {
-                this.classList.toggle("active");
-                var table_to_collapse = document.getElementById("table_to_collapse_" + ids[i].substring(10));
-                if (table_to_collapse.style.display === "block") {
-                table_to_collapse.style.display = "none";
-                } else {
-                table_to_collapse.style.display = "block";
-                }
-            });
+            collapse_button.addEventListener("click", collapse, false);
         }
         console.log("asd")
         return 0;
     }
+    function collapse(event) {
+        var id = event.target.id.substring(16);
+        var table_to_collapse = document.getElementById("table_to_collapse_" + id);
+        if (table_to_collapse.style.display == "block") {
+        table_to_collapse.style.display = "none";
+        } else {
+        table_to_collapse.style.display = "block";
+        }
+    }
     """,
     [Output("empty", "children")],
     [   
-        Input("button_ids", "children")
+        Input("all_button_ids", "children"),
     ]
 )
 
@@ -370,7 +373,7 @@ app.clientside_callback(
         Output('map', 'figure'),
         Output('schools-info-table', 'children'),
         Output('stops-info-table', 'children'),
-        Output('button_ids', 'children'),
+        Output('all_button_ids', 'children'),
     ],
     [
         Input('metric', 'value'),
@@ -385,7 +388,7 @@ app.clientside_callback(
 def update_map(metric, metric_weight, metric_type, metric_time, metric_thresholds, options, schools_options, selceted_region):
     stops = {}
     schools = {}
-    button_ids = []
+    new_button_ids = []
     for i in selceted_region:
         try:
             stops[i] = {}
@@ -393,14 +396,14 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
                 stops[i][stop] = {}
                 stop_df = stops_info.loc[stops_info["Unnamed: 0"] == str(stop).zfill(4)]
                 stops[i][stop]["Nazwa"] = stop_df["name"].values[0]
-                button_ids.append("button_id_" + stop_df["name"].values[0])
+                new_button_ids.append("button_id_" + stop_df["name"].values[0])
                 stops[i][stop]["Numer"] = stop_df["Unnamed: 0"].values[0]
                 stops[i][stop]["Linie"] = {}
                 for k,v in ast.literal_eval(stop_df["lines"].values[0]).items():
                     stops[i][stop]["Linie"][k] = {}
                     stops[i][stop]["Linie"][k]["Informacje"] = {}
                     stops[i][stop]["Linie"][k]["Informacje"]["Nazwa"] = k
-                    button_ids.append("button_id_" + k + stop_df["name"].values[0])
+                    new_button_ids.append("button_id_" + k + stop_df["name"].values[0])
                     stops[i][stop]["Linie"][k]["Informacje"]["Typ"] = v["type"]
                     stops[i][stop]["Linie"][k]["Informacje"]["Godziny odjazdu"] = v["hours"]
                     stops[i][stop]["Linie"][k]["Informacje"]["Odjazd z przystanku"] = v["direction_from"]
@@ -411,11 +414,12 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
             schools[i] = {}
             for school in schools_in_rejon[str(i)]:
                 schools[i][school] = schools_with_progi.iloc[school]
-                button_ids.append("button_id_" + schools_with_progi.iloc[school]["Nazwa"])
+                new_button_ids.append("button_id_" + schools_with_progi.iloc[school]["Nazwa"])
         except:
             schools[i] = {}
+
     selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(["metric", metric, metric_type, metric_weight, metric_thresholds])
-    return build_map(selected_metric, options, schools_options, selceted_region), generate_table(schools, "590px"), generate_table(stops, "590px"), button_ids
+    return build_map(selected_metric, options, schools_options, selceted_region), generate_table(schools, "590px"), generate_table(stops, "590px"), new_button_ids
 
 
 @app.callback(
@@ -443,7 +447,7 @@ def filter_update(selected_filters):
 def metric_update(selected_metric):
     if selected_metric == "percentage_metric":
         return {'display': 'none'}, \
-                {'display': 'inline-block', 'font-size': '12pt'}, \
+                {'display': 'inline-block', 'fontSize': '12pt'}, \
                 {'width': 170, 'display': 'inline-block', 'verticalAlign': "middle", 'textAlign': "left"}, \
                 {'display': 'none'}, \
                 {'display': 'none'}
@@ -451,7 +455,7 @@ def metric_update(selected_metric):
         return {'width': 110, 'display': 'inline-block', 'verticalAlign': "middle", 'textAlign': "left"}, \
                 {'display': 'none'}, \
                 {'display': 'none'}, \
-                {'display': 'inline-block', 'font-size': '12pt'}, \
+                {'display': 'inline-block', 'fontSize': '12pt'}, \
                 {'width': 170, 'display': 'inline-block', 'verticalAlign': "middle", 'textAlign': "left"}
 
 @app.callback(
