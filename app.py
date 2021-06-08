@@ -118,7 +118,7 @@ def generate_table(df_dict, width, name=""):
                     # Body
                     [html.Tbody([html.Tr([
                         html.Td(index, style={"border": "1px solid black", "verticalAlign" : "top"}),
-                        generate_table(value, "100%", row["Nazwa"]) if type(value) is dict else html.Td(value)
+                        generate_table(value, "auto", row["Nazwa"]) if type(value) is dict else html.Td(value)
                     ], style={
                         "border": "1px solid black"
                     }) for index, value in row.items()], style={'display' : 'none', 'width' : '100%'}, id="table_to_collapse_"  + row["Nazwa"] + name)]
@@ -126,19 +126,22 @@ def generate_table(df_dict, width, name=""):
             ], style={
                 "border": "1px solid black",
                 'verticalAlign': 'top',
-                'width': width,
+                'width': width
             }
             ) for col in df_dict.keys()])])]
     )], style={
         'width': width,
-        'overflow': 'scroll'
+        'height': '96%',
+        'overflow-y': 'scroll',
+        'overflow': 'scroll',
+        'margin' : '0px 5px 0px 0px'
     }
     )
 
 
 app.layout = html.Div(
     children=[
-        html.Section(
+        html.Div(
             id='map-section',
             children=html.Div(
                className='screen-height',
@@ -146,7 +149,7 @@ app.layout = html.Div(
                    html.Div(
                        className='section',
                        children=[
-                           dbc.Row(
+                           html.Div( 
                                id='map-filters',
                                children=[
                                    html.H5(
@@ -169,7 +172,7 @@ app.layout = html.Div(
                                    'display': 'block'
                                }
                            ),
-                           dbc.Row(
+                           html.Div(
                                id='schools-filters',
                                children=[
                                    html.H5(
@@ -194,12 +197,8 @@ app.layout = html.Div(
                                    'display': 'none'
                                }
                            ),
-                           dbc.Row(
-                               className='top',
-                               no_gutters=True,
-                               children=[
-                                   dbc.Col(md=6,
-                                           className='box',
+                           html.Div(children=[
+                                   html.Div(
                                            children=[
                                                dcc.Graph(
                                                    id='map',
@@ -208,28 +207,30 @@ app.layout = html.Div(
                                                        'modeBarButtonsToRemove': ['select2d', 'lasso2d'],
                                                        'scrollZoom': False
                                                    },
+                                                   style={"height" : "100%"}
                                                ),
                                                html.Div(id="output")
-                                           ]
+                                           ], style={'max-height': '100%', 'width': '35%'}
                                            ),
-                                   dbc.Col(
+                                   html.Div(
                                        children=[
                                            html.Div(
                                                children=[
-                                                   dbc.Row(
+                                                   html.Div(
                                                        html.Plaintext(
                                                            "Informacje o przystankach",
                                                            style={
                                                                'font': '14pt Arial Black',
-                                                               'margin': "0px 0px 0px 35px",
+                                                               'margin': "0px 0px 0px 15px",
                                                            }
                                                        )
                                                    ),
-                                                   dbc.Row(
+                                                   html.Div(
                                                        id="stops-info-table",
                                                        style={
-                                                           'margin': "0px 0px 0px 35px",
+                                                           'margin': "0px 0px 0px 5px",
                                                            'width': '100%',
+                                                           'height' : '100%'
                                                        }
                                                    )
                                                ],
@@ -237,24 +238,26 @@ app.layout = html.Div(
                                                    'border': '1px solid black',
                                                    'float': 'left',
                                                    'width': '50%',
+                                                   'height' : '100%'
                                                }
                                            ),
                                            html.Div(
                                                children=[
-                                                   dbc.Row(
+                                                   html.Div(
                                                        html.Plaintext(
                                                            "Informacje o szkołach",
                                                            style={
                                                                'font': '14pt Arial Black',
-                                                               'margin': "0px 0px 0px 35px",
+                                                               'margin': "0px 0px 0px 15px",
                                                            }
                                                        )
                                                    ),
-                                                   dbc.Row(
+                                                   html.Div(
                                                        id="schools-info-table",
                                                        style={
-                                                           'margin': "0px 0px 0px 35px",
+                                                           'margin': "0px 0px 0px 5px",
                                                            'width': '100%',
+                                                           'height' : '100%'
                                                        }
                                                    ),
 
@@ -263,16 +266,18 @@ app.layout = html.Div(
                                                    'border': '1px solid black',
                                                    'float': 'left',
                                                    'width': '50%',
+                                                   'height' : '100%'
                                                }
                                            )
                                        ],
                                        style={
                                            'border': '1px solid black',
-                                           'overflow': 'hidden',
-                                       }
-                                   )
-                               ]),
-                           dbc.Row(
+                                           'height' : '100%',
+                                           'max-height': '100%',
+                                           'width' : '65%'
+                                       })     
+                           ], style={"height":"60%", "display": "flex"}),
+                           html.Div(
                                className='bottom',
                                children=[
                                    html.Plaintext("Typ metryki ", style={
@@ -395,6 +400,11 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
             for stop in stops_in_rejon[str(i)]:
                 stops[i][stop] = {}
                 stop_df = stops_info.loc[stops_info["Unnamed: 0"] == str(stop).zfill(4)]
+                if stop_df.empty:
+                    stops[i][stop]["Nazwa"] = f"N/A (numer {stop})"
+                    stops[i][stop]["Numer"] = "N/A"
+                    stops[i][stop]["Linie"] = {}
+                    continue
                 stops[i][stop]["Nazwa"] = stop_df["name"].values[0]
                 new_button_ids.append("button_id_" + stop_df["name"].values[0])
                 stops[i][stop]["Numer"] = stop_df["Unnamed: 0"].values[0]
@@ -406,8 +416,8 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
                     new_button_ids.append("button_id_" + k + stop_df["name"].values[0])
                     stops[i][stop]["Linie"][k]["Informacje"]["Typ"] = v["type"]
                     stops[i][stop]["Linie"][k]["Informacje"]["Godziny odjazdu"] = v["hours"]
-                    stops[i][stop]["Linie"][k]["Informacje"]["Odjazd z przystanku"] = v["direction_from"]
-                    stops[i][stop]["Linie"][k]["Informacje"]["Kierunek"] = v["direction_to"]
+                    stops[i][stop]["Linie"][k]["Informacje"]["Odjazd z przystanku"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"]==str(v["direction_from"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"]==str(v["direction_from"])]["name"].values[0]
+                    stops[i][stop]["Linie"][k]["Informacje"]["Kierunek"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"]==str(v["direction_to"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"]==str(v["direction_to"])]["name"].values[0]
         except:
             stops[i] = {}
         try:
@@ -419,7 +429,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
             schools[i] = {}
 
     selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(["metric", metric, metric_type, metric_weight, metric_thresholds])
-    return build_map(selected_metric, options, schools_options, selceted_region), generate_table(schools, "590px"), generate_table(stops, "590px"), new_button_ids
+    return build_map(selected_metric, options, schools_options, selceted_region), generate_table(schools, "99%"), generate_table(stops, "99%"), new_button_ids
 
 
 @app.callback(

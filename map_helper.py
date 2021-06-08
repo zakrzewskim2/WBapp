@@ -177,7 +177,7 @@ def build_map(metric, options, schools_options, selceted_region):
             bearing=0,
             center=go.layout.mapbox.Center(
                 lat=52.2297,
-                lon=21.0122
+                lon=21.0622
             ),
             pitch=0,
             zoom=10
