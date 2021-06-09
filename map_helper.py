@@ -34,6 +34,8 @@ def build_map(metric, options, schools_options, selceted_region):
 
     gray_colorscale = [[0, 'gray'],
                     [1, 'gray']]
+
+    num_of_traces_to_add_for_some_reason = 6
     fig = go.Figure()
 
     if "percentage" in metric:
@@ -104,6 +106,7 @@ def build_map(metric, options, schools_options, selceted_region):
                     color="blue"
                     )
             )
+            num_of_traces_to_add_for_some_reason-=1
         else:
             if 'school_lic' in schools_options:
                 selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Unnamed: 0"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Liceum ogólnokształcące"]["Unnamed: 0"]))]
@@ -116,6 +119,7 @@ def build_map(metric, options, schools_options, selceted_region):
                     color="blue"
                     )
                 )
+                num_of_traces_to_add_for_some_reason-=1
             if 'school_podst' in schools_options:
                 selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Unnamed: 0"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Szkoła podstawowa"]["Unnamed: 0"]))]
                 fig.add_scattermapbox(
@@ -127,6 +131,7 @@ def build_map(metric, options, schools_options, selceted_region):
                     color="blue"
                     )
                 )
+                num_of_traces_to_add_for_some_reason-=1
             if 'school_tech' in schools_options:
                 selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Unnamed: 0"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Technikum"]["Unnamed: 0"]))]
                 fig.add_scattermapbox(
@@ -138,8 +143,7 @@ def build_map(metric, options, schools_options, selceted_region):
                     color="blue"
                     )
                 )
-    else:
-        fig.add_scattermapbox()
+                num_of_traces_to_add_for_some_reason-=1
     if "subway" in options:
         subway_pos = stops_pos.iloc[np.where(
             stops_pos.index.astype(str).str.zfill(4).str.startswith("0"))]
@@ -153,8 +157,8 @@ def build_map(metric, options, schools_options, selceted_region):
             ),
             
         )
-    else:
-        fig.add_scattermapbox()
+        num_of_traces_to_add_for_some_reason-=1
+    
     if "stops" in options:
         if "subway" in options:
             stops = stops_pos.iloc[np.where(~stops_pos.index.astype(
@@ -167,7 +171,9 @@ def build_map(metric, options, schools_options, selceted_region):
             showlegend=False,
             hoverinfo='skip'
         )
-    else:
+        num_of_traces_to_add_for_some_reason-=1
+    
+    for i in range(num_of_traces_to_add_for_some_reason):
         fig.add_scattermapbox()
 
     fig.update_layout(
