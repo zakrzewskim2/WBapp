@@ -36,6 +36,7 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'schools_in_rejon.json'), encoding
 
 schools_with_progi = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
+schools_with_progi.rename(columns = {'Unnamed: 0' : 'Numer'}, inplace = True)
 
 stops_info = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'stops_info.csv'), encoding='utf-8')
