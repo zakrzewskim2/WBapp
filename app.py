@@ -51,13 +51,13 @@ METRIC_MAPPING = [
     {'label': 'procentowa', 'value': 'percentage_metric'}
 ]
 
-schools_with_progi_with_S = schools_with_progi
-schools_with_progi_with_S['Id'] = np.char.add(
-    'S', schools_with_progi_with_S.Numer.astype(str))
-schools_with_progi_with_S = schools_with_progi_with_S.loc[:, ['Id', 'Typ']]
+# schools_with_progi_with_S = schools_with_progi
+# schools_with_progi_with_S['Id'] = np.char.add(
+#     'S', schools_with_progi_with_S.Numer.astype(int))
+schools_with_progi_Num_Type = schools_with_progi.loc[:, ['Numer', 'Typ']]
 
-dojazdy_merged = schools_with_progi_with_S.merge(
-    dojazdy_info, left_on='Id', right_on='school')
+dojazdy_merged = schools_with_progi_Num_Type.merge(
+    dojazdy_info, left_on='Numer', right_on='school')
 
 button_names = []
 # %%
@@ -142,10 +142,6 @@ METRIC_WEIGHT_MAPPING = [
     {'label': 'ważona', 'value': 'weight-True'},
     {'label': 'nie ważona', 'value': 'weight-False'}
 ]
-
-# widelki_labels = {0: "[0,10) minut", 1: "[10,20) minut", 2: "[20,30) minut", 3: "[30,40) minut", 4: "[40,50) minut", 5: "[50,60) minut",
-#                   6: "[60,70) minut", 7: "[70,80) minut", 8: "[80,90) minut", 9: "[90,100) minut", 10: "[100,110) minut", 11: "[110,120) minut", 12: "ponad 120 minut"}
-
 
 def gen_widelki_labels(widelki):
     labels = {}
@@ -611,6 +607,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
         except:
             schools[reg_num] = {}
 
+
     widelki = np.array([]) if widelki_string is None else np.array(
         eval(widelki_string))
     widelki_labels = gen_widelki_labels(widelki)
@@ -646,6 +643,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
             new_counts.append(0)
     counts = new_counts
     unique = new_unique
+
             
     fig = go.Figure([go.Bar(x=[widelki_labels[u] for u in unique], y=counts)])
 
