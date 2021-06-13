@@ -613,9 +613,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
 
     widelki = np.array([]) if widelki_string is None else np.array(
         eval(widelki_string))
-    print(widelki)
     widelki_labels = gen_widelki_labels(widelki)
-    print(widelki_labels)
     
     if metric_type != 'ALL':
         school_types = []
