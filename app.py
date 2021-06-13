@@ -53,10 +53,12 @@ METRIC_MAPPING = [
 ]
 
 schools_with_progi_with_S = schools_with_progi
-schools_with_progi_with_S['Id'] = np.char.add('S', schools_with_progi_with_S.Numer.astype(str))
+schools_with_progi_with_S['Id'] = np.char.add(
+    'S', schools_with_progi_with_S.Numer.astype(str))
 schools_with_progi_with_S = schools_with_progi_with_S.loc[:, ['Id', 'Typ']]
 
-dojazdy_merged = schools_with_progi_with_S.merge(dojazdy_info, left_on='Id', right_on='school')
+dojazdy_merged = schools_with_progi_with_S.merge(
+    dojazdy_info, left_on='Id', right_on='school')
 
 button_names = []
 # %%
@@ -142,8 +144,20 @@ METRIC_WEIGHT_MAPPING = [
     {'label': 'nie ważona', 'value': 'weight-False'}
 ]
 
-widelki_labels = {0: "[0,10) minut", 1: "[10,20) minut", 2: "[20,30) minut", 3: "[30,40) minut", 4: "[40,50) minut", 5: "[50,60) minut",
-                  6: "[60,70) minut", 7: "[70,80) minut", 8: "[80,90) minut", 9: "[90,100) minut", 10: "[100,110) minut", 11: "[110,120) minut", 12: "ponad 120 minut"}
+# widelki_labels = {0: "[0,10) minut", 1: "[10,20) minut", 2: "[20,30) minut", 3: "[30,40) minut", 4: "[40,50) minut", 5: "[50,60) minut",
+#                   6: "[60,70) minut", 7: "[70,80) minut", 8: "[80,90) minut", 9: "[90,100) minut", 10: "[100,110) minut", 11: "[110,120) minut", 12: "ponad 120 minut"}
+
+
+def gen_widelki_labels(widelki):
+    labels = {}
+    print('a', [0] + list(widelki[:-1]))
+    print('b', widelki)
+    for i, (s, e) in enumerate(zip([0] + list(widelki[:-1]), widelki)):
+        print(s, e)
+        labels[i] = f'[{s}, {e}) minut'
+    labels[len(widelki)] = 'ponad 120 minut'
+    return labels
+
 
 app = dash.Dash(__name__, external_stylesheets=[
     dbc.themes.BOOTSTRAP,
@@ -395,12 +409,30 @@ app.layout = html.Div(
                                        " progi.", id="plaintext-thresholds", style=dict(display='none'))
                                ]
                            ),
-                           html.Div(
-                               children=[
-                                   html.Plaintext("Podziałka histogramu:", style={
-                                       'display': 'inline-block', 'fontSize': '12pt'}),
-                               ]
-                           ),
+                            html.Div(
+                            [
+                                html.Plaintext(id='hist-interval-output', style={
+                                    'display': 'inline-block', 'fontSize': '12pt'}),
+                                dcc.Slider(
+                                    id='hist-interval',
+                                    value=10,
+                                    min=3,
+                                    max=60,
+                                    # step=None,
+                                    marks={
+                                        3: '3',
+                                        5: '5',
+                                        10: '10',
+                                        15: '15',
+                                        20: '20',
+                                        30: '30',
+                                        40: '40',
+                                        60: '60',
+                                    }, 
+                                    # tooltip = { 'placement': 'bottom' }
+                                ),
+                            ],
+                            style={"display": "grid", "grid-template-columns": "20% 80%"}),
                            html.Div(
                                children=[
                                    html.Div(children=[
@@ -461,7 +493,6 @@ app.layout = html.Div(
                    ),
                ]
             )
-
         )
     ]
 )
@@ -518,7 +549,7 @@ app.clientside_callback(
 )
 
 
-@app.callback(
+@ app.callback(
     [
         Output('map', 'figure'),
         Output('schools-info-table', 'children'),
@@ -538,48 +569,48 @@ app.clientside_callback(
         Input('widelki-selection', 'children')
     ])
 def update_map(metric, metric_weight, metric_type, metric_time, metric_thresholds, options, schools_options, selceted_region, widelki_string):
-    stops = {}
-    schools = {}
-    stop_numbers = []
-    new_button_ids = []
+    stops={}
+    schools={}
+    stop_numbers=[]
+    new_button_ids=[]
     for i in selceted_region:
-        reg_num = "Rejon numer: " + str(i)
+        reg_num="Rejon numer: " + str(i)
         try:
-            stops[reg_num] = {}
+            stops[reg_num]={}
             for stop in stops_in_rejon[str(i)]:
                 stop_numbers.append(int(stop))
-                stops[reg_num][stop] = {}
-                stop_df = stops_info.loc[stops_info["Unnamed: 0"] == str(
+                stops[reg_num][stop]={}
+                stop_df=stops_info.loc[stops_info["Unnamed: 0"] == str(
                     int(stop))]
                 if stop_df.empty:
-                    stops[reg_num][stop]["Nazwa"] = f"N/A (numer {stop})"
-                    stops[reg_num][stop]["Numer"] = "N/A"
-                    stops[reg_num][stop]["Linie"] = {}
+                    stops[reg_num][stop]["Nazwa"]=f"N/A (numer {stop})"
+                    stops[reg_num][stop]["Numer"]="N/A"
+                    stops[reg_num][stop]["Linie"]={}
                     continue
-                stops[reg_num][stop]["Nazwa"] = stop_df["name"].values[0]
+                stops[reg_num][stop]["Nazwa"]=stop_df["name"].values[0]
                 new_button_ids.append("button_id_" + stop_df["name"].values[0])
-                stops[reg_num][stop]["Numer"] = stop_df["Unnamed: 0"].values[0]
-                stops[reg_num][stop]["Linie"] = {}
+                stops[reg_num][stop]["Numer"]=stop_df["Unnamed: 0"].values[0]
+                stops[reg_num][stop]["Linie"]={}
                 for k, v in ast.literal_eval(stop_df["lines"].values[0]).items():
-                    linia_num = "Linia numer: " + str(k)
-                    stops[reg_num][stop]["Linie"][linia_num] = {}
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"] = {}
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Nazwa"] = k
+                    linia_num="Linia numer: " + str(k)
+                    stops[reg_num][stop]["Linie"][linia_num]={}
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]={}
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Nazwa"]=k
                     new_button_ids.append(
                         "button_id_" + k + stop_df["name"].values[0])
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Typ"] = v["type"]
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Godziny odjazdu"] = v["hours"]
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Odjazd z przystanku"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Typ"]=v["type"]
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Godziny odjazdu"]=v["hours"]
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Odjazd z przystanku"]="Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
                         v["direction_from"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"] == str(v["direction_from"])]["name"].values[0]
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Kierunek"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Kierunek"]="Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
                         v["direction_to"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"] == str(v["direction_to"])]["name"].values[0]
         except:
-            stops[reg_num] = {}
+            stops[reg_num]={}
         try:
 
-            schools[reg_num] = {}
+            schools[reg_num]={}
             for school in schools_in_rejon[str(i)]:
-                schools[reg_num][school] = schools_with_progi.iloc[school]
+                schools[reg_num][school]=schools_with_progi.iloc[school]
                 new_button_ids.append(
                     "button_id_" + schools_with_progi.iloc[school]["Nazwa"])
         except:
@@ -587,6 +618,9 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
 
     widelki = np.array([]) if widelki_string is None else np.array(
         eval(widelki_string))
+    print(widelki)
+    widelki_labels = gen_widelki_labels(widelki)
+    print(widelki_labels)
     
     if metric_type != 'ALL':
         school_types = []
@@ -652,6 +686,8 @@ def display_dojazdy_table(n_click, widelki_string, selceted_region):
 
     widelki = np.array([]) if widelki_string is None else np.array(
         eval(widelki_string))
+    widelki_labels = gen_widelki_labels(widelki)
+    
     dojazdy = {}
     for v in widelki_labels.values():
         dojazdy[v] = {}
@@ -723,6 +759,21 @@ def select_region(selectedregion):
     return selected_region, selected_region_indices
 
 
+@app.callback(
+    [
+        Output('hist-interval-output', 'children'),
+        Output('widelki-selection', 'children'),
+    ],
+    [
+        Input('hist-interval', 'value'),
+    ])
+def change_interval(hist_interval):
+    values = list(range(0, 120, hist_interval))[1:] + [120]
+    return f'Podziałka histogramu: {hist_interval} minut', str(values)
+
+
 if __name__ == '__main__':
     app.run_server(debug=True)
+
+
 # %%
