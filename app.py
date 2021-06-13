@@ -36,7 +36,6 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'schools_in_rejon.json'), encoding
 
 schools_with_progi = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
-schools_with_progi.rename(columns={'Unnamed: 0': 'Numer'}, inplace=True)
 
 stops_info = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'stops_info.csv'), encoding='utf-8')
@@ -607,12 +606,11 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
         except:
             stops[reg_num]={}
         try:
-
-            schools[reg_num]={}
+            schools[reg_num] = {}
             for school in schools_in_rejon[str(i)]:
-                schools[reg_num][school]=schools_with_progi.iloc[school]
+                schools[reg_num][school] = schools_with_progi.loc[schools_with_progi.Numer == school].squeeze()
                 new_button_ids.append(
-                    "button_id_" + schools_with_progi.iloc[school]["Nazwa"])
+                    "button_id_" + schools_with_progi.loc[schools_with_progi.Numer == school]["Nazwa"].values[0])
         except:
             schools[reg_num] = {}
 
