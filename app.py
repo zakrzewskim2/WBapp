@@ -659,7 +659,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
                     line_dash="dot",
                     line_color="#d80000",
                     annotation_text=f"Średnia: {round(mean_value, 2)} minuty", 
-                    annotation_position="top right",
+                    annotation_position="top",
                     annotation_font_size=12,
                     annotation_font_color="#d80000"
                 )
