@@ -45,6 +45,8 @@ stops_info = stops_info.astype({'Unnamed: 0': 'str'})
 dojazdy_info = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'best_stats.csv'), encoding='utf-8', index_col=0)
 
+dojazdy_info.fillna(float("inf"), inplace=True)
+
 METRIC_MAPPING = [
     {'label': 'nowa', 'value': 'new_metric'},
     {'label': 'procentowa', 'value': 'percentage_metric'}
@@ -395,6 +397,12 @@ app.layout = html.Div(
                            ),
                            html.Div(
                                children=[
+                                   html.Plaintext("Podziałka histogramu:", style={
+                                       'display': 'inline-block', 'fontSize': '12pt'}),
+                               ]
+                           ),
+                           html.Div(
+                               children=[
                                    html.Div(children=[
                                        dcc.Graph(
                                            id='histogram',
@@ -589,7 +597,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
     else:
         dojazdy_merged_filtered = dojazdy_merged
 
-    if len(stop_numbers) > 0:
+    if len(selceted_region) > 0:
         dojazdy = np.array(dojazdy_merged_filtered.loc[np.isin(
             dojazdy_merged_filtered.source_stop, stop_numbers)]["TOTAL_LEN"])
     else:
