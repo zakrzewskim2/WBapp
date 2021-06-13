@@ -36,7 +36,7 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'schools_in_rejon.json'), encoding
 
 schools_with_progi = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
-schools_with_progi.rename(columns = {'Unnamed: 0' : 'Numer'}, inplace = True)
+schools_with_progi.rename(columns={'Unnamed: 0': 'Numer'}, inplace=True)
 
 stops_info = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'stops_info.csv'), encoding='utf-8')
@@ -49,6 +49,12 @@ METRIC_MAPPING = [
     {'label': 'nowa', 'value': 'new_metric'},
     {'label': 'procentowa', 'value': 'percentage_metric'}
 ]
+
+schools_with_progi_with_S = schools_with_progi
+schools_with_progi_with_S['Id'] = np.char.add('S', schools_with_progi_with_S.Numer.astype(str))
+schools_with_progi_with_S = schools_with_progi_with_S.loc[:, ['Id', 'Typ']]
+
+dojazdy_merged = schools_with_progi_with_S.merge(dojazdy_info, left_on='Id', right_on='school')
 
 button_names = []
 # %%
@@ -73,6 +79,50 @@ METRIC_SCHOOL_TYPE_MAPPING = [
     {'label': 'szkół zawodowych, liceów i techników', 'value': 'LIC-ZAW-TEC'},
 ]
 
+SCHOOL_TYPE_MAPPING = {'OUT': ['Placówka doskonalenia nauczycieli',
+                                          'Młodzieżowy Ośrodek Socjoterapii ze szkołami',
+                                          'Biblioteki pedagogiczne',
+                                          'Pozaszkolna placówka specjalistyczna',
+                                          'Bursa',
+                                          'Młodzieżowy Ośrodek Wychowawczy',
+                                          'Zespół szkół i placówek oświatowych',
+                                          'Specjalny Ośrodek Szkolno-Wychowawczy',
+                                          'Poradnia specjalistyczna',
+                                          'Szkoła policealna',
+                                          'Szkolne schronisko młodzieżowe',
+                                          'Młodzieżowy dom kultury',
+                                          'Niepubliczna placówka oświatowo-wychowawcza w systemie oświaty',
+                                          'Poradnia psychologiczno-pedagogiczna',
+                                          'Szkoła specjalna przysposabiająca do pracy',
+                                          'Ognisko pracy pozaszkolnej',
+                                          'Policealna szkoła plastyczna',
+                                          'Ogród jordanowski',
+                                          'Ośrodek Rewalidacyjno-Wychowawczy',
+                                          'Międzyszkolny ośrodek sportowy',
+                                          'Specjalny Ośrodek Wychowawczy',
+                                          'Pałac młodzieży',
+                                          'Policealna szkoła muzyczna'],
+                                  'PRZ': ['Przedszkole',
+                                          'Punkt przedszkolny',
+                                          'Zespół wychowania przedszkolnego'],
+                                  'POD': ['Szkoła podstawowa'],
+                                  'ZAW': ['Branżowa szkoła I stopnia',
+                                          'Placówka Kształcenia Ustawicznego - bez szkół',
+                                          'Placówka Kształcenia Ustawicznego ze szkołami',
+                                          'Centrum Kształcenia Zawodowego',
+                                          'Bednarska Szkoła Realna',
+                                          'Branżowa szkoła II stopnia'],
+                                  'LIC': ['Liceum ogólnokształcące'],
+                                  'TEC': ['Technikum'],
+                                  'MUZ': ['Szkoła muzyczna I stopnia',
+                                          'Szkoła muzyczna II stopnia',
+                                          'Ogólnokształcąca szkoła muzyczna II stopnia',
+                                          'Ogólnokształcąca szkoła muzyczna I stopnia',
+                                          'Inna szkoła artystyczna',
+                                          'Ogólnokształcąca szkoła baletowa',
+                                          'Placówki artystyczne (ognisko artystyczne)',
+                                          'Liceum sztuk plastycznych']}
+
 METRIC_TIME_MAPPING = [
     {'label': '15 minut.', 'value': 'time-15'},
     {'label': '30 minut.', 'value': 'time-30'},
@@ -90,7 +140,8 @@ METRIC_WEIGHT_MAPPING = [
     {'label': 'nie ważona', 'value': 'weight-False'}
 ]
 
-widelki_labels = {0:"[0,10) minut", 1: "[10,20) minut", 2: "[20,30) minut", 3: "[30,40) minut", 4: "[40,50) minut", 5: "[50,60) minut", 6: "[60,70) minut", 7: "[70,80) minut", 8: "[80,90) minut", 9: "[90,100) minut", 10: "[100,110) minut", 11: "[110,120) minut", 12: "ponad 120 minut"}
+widelki_labels = {0: "[0,10) minut", 1: "[10,20) minut", 2: "[20,30) minut", 3: "[30,40) minut", 4: "[40,50) minut", 5: "[50,60) minut",
+                  6: "[60,70) minut", 7: "[70,80) minut", 8: "[80,90) minut", 9: "[90,100) minut", 10: "[100,110) minut", 11: "[110,120) minut", 12: "ponad 120 minut"}
 
 app = dash.Dash(__name__, external_stylesheets=[
     dbc.themes.BOOTSTRAP,
@@ -382,10 +433,10 @@ app.layout = html.Div(
                                            'height': '100%'
                                        }
                                    )
-                               ], style={"display": "flex", "height":"30%"}
+                               ], style={"display": "flex", "height": "30%"}
                            ),
-                           html.Div("[10,20,30,40,50,60,70,80,90,100,110,120]", 
-                                            id='widelki-selection', style={'display': 'none'}),
+                           html.Div("[10,20,30,40,50,60,70,80,90,100,110,120]",
+                                    id='widelki-selection', style={'display': 'none'}),
                            html.Div(id='selected-region',
                                     style={'display': 'none'}, children=''),
                            html.Div(id='selected-region-indices',
@@ -394,7 +445,7 @@ app.layout = html.Div(
                                     className='scroll'),
                            html.Div(id='all_button_ids',
                                     style={'display': 'none'}),
-                            html.Div(id='dojazdy_button_ids',
+                           html.Div(id='dojazdy_button_ids',
                                     style={'display': 'none'}),
                            html.Div(id='empty', style={'display': 'none'}),
                            html.Div(id='empty2', style={'display': 'none'})
@@ -457,6 +508,8 @@ app.clientside_callback(
         Input("dojazdy_button_ids", "children"),
     ]
 )
+
+
 @app.callback(
     [
         Output('map', 'figure'),
@@ -488,7 +541,8 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
             for stop in stops_in_rejon[str(i)]:
                 stop_numbers.append(int(stop))
                 stops[reg_num][stop] = {}
-                stop_df = stops_info.loc[stops_info["Unnamed: 0"] == str(int(stop))]
+                stop_df = stops_info.loc[stops_info["Unnamed: 0"] == str(
+                    int(stop))]
                 if stop_df.empty:
                     stops[reg_num][stop]["Nazwa"] = f"N/A (numer {stop})"
                     stops[reg_num][stop]["Numer"] = "N/A"
@@ -523,9 +577,26 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
         except:
             schools[reg_num] = {}
 
-    widelki = np.array([]) if widelki_string is None else np.array(eval(widelki_string))
-    dojazdy = np.array(dojazdy_info.loc[np.isin(dojazdy_info.source_stop, stop_numbers)]["TOTAL_LEN"])
-    columns = np.sum(np.repeat(dojazdy, len(widelki)).reshape(len(dojazdy),len(widelki)) >= np.repeat(widelki.reshape(-1,1), len(dojazdy), axis=1).transpose(), axis=1)
+    widelki = np.array([]) if widelki_string is None else np.array(
+        eval(widelki_string))
+    
+    if metric_type != 'ALL':
+        school_types = []
+        for part in metric_type.split('-'):
+            school_types += SCHOOL_TYPE_MAPPING[part]
+        
+        dojazdy_merged_filtered = dojazdy_merged.loc[np.isin(dojazdy_merged.Typ, school_types)]
+    else:
+        dojazdy_merged_filtered = dojazdy_merged
+
+    if len(stop_numbers) > 0:
+        dojazdy = np.array(dojazdy_merged_filtered.loc[np.isin(
+            dojazdy_merged_filtered.source_stop, stop_numbers)]["TOTAL_LEN"])
+    else:
+        dojazdy = np.array(dojazdy_merged_filtered["TOTAL_LEN"])
+
+    columns = np.sum(np.repeat(dojazdy, len(widelki)).reshape(len(dojazdy), len(
+        widelki)) >= np.repeat(widelki.reshape(-1, 1), len(dojazdy), axis=1).transpose(), axis=1)
     unique, counts = np.unique(columns, return_counts=True)
     fig = go.Figure([go.Bar(x=[widelki_labels[u] for u in unique], y=counts)])
 
@@ -542,14 +613,14 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
     ],
     [
         Input('dojazdy-info-button', 'n_clicks'),
-        Input('widelki-selection', 'children'), 
+        Input('widelki-selection', 'children'),
     ],
     [
         State('selected-region-indices', 'children')
     ])
 def display_dojazdy_table(n_click, widelki_string, selceted_region):
     if n_click is None or n_click % 2 == 0:
-        return html.Div(), {"display" : "none"}, []
+        return html.Div(), {"display": "none"}, []
 
     new_button_ids = []
     stop_numbers = []
@@ -557,18 +628,22 @@ def display_dojazdy_table(n_click, widelki_string, selceted_region):
         for stop in stops_in_rejon[str(i)]:
             stop_numbers.append(int(stop))
 
-    widelki = np.array([]) if widelki_string is None else np.array(eval(widelki_string))
+    widelki = np.array([]) if widelki_string is None else np.array(
+        eval(widelki_string))
     dojazdy = {}
     for v in widelki_labels.values():
-         dojazdy[v] = {}
+        dojazdy[v] = {}
     for i, dojazd in dojazdy_info.loc[np.isin(dojazdy_info.source_stop, stop_numbers)].iterrows():
         proper_widelek = np.sum(dojazd["TOTAL_LEN"] >= np.array(widelki))
         new_button_ids.append("button_id_" + dojazd["school"])
         dojazdy[widelki_labels[proper_widelek]][dojazd["school"]] = {}
-        dojazdy[widelki_labels[proper_widelek]][dojazd["school"]]["Nazwa"] = dojazd["school"]
-        dojazdy[widelki_labels[proper_widelek]][dojazd["school"]]["Czas dojazdu"] = dojazd["TOTAL_LEN"]
-    
-    return generate_table(dojazdy, "99%"), {"display" : "block"}, new_button_ids
+        dojazdy[widelki_labels[proper_widelek]
+                ][dojazd["school"]]["Nazwa"] = dojazd["school"]
+        dojazdy[widelki_labels[proper_widelek]][dojazd["school"]
+                                                ]["Czas dojazdu"] = dojazd["TOTAL_LEN"]
+
+    return generate_table(dojazdy, "99%"), {"display": "block"}, new_button_ids
+
 
 @app.callback(
     Output('schools-filters', 'style'),
