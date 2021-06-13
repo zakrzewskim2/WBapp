@@ -598,6 +598,20 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
     columns = np.sum(np.repeat(dojazdy, len(widelki)).reshape(len(dojazdy), len(
         widelki)) >= np.repeat(widelki.reshape(-1, 1), len(dojazdy), axis=1).transpose(), axis=1)
     unique, counts = np.unique(columns, return_counts=True)
+
+    new_unique = []
+    new_counts = []
+    counts_index = 0
+    for i, _ in enumerate(widelki_labels):
+        new_unique.append(i)
+        if i in unique:
+            new_counts.append(counts[counts_index])
+            counts_index += 1
+        else:
+            new_counts.append(0)
+    counts = new_counts
+    unique = new_unique
+            
     fig = go.Figure([go.Bar(x=[widelki_labels[u] for u in unique], y=counts)])
 
     selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(
