@@ -45,7 +45,8 @@ def build_map(metric, options, schools_options, selceted_region):
     access_true = access.assign(accessibility_index = np.where(access.accessibility_index == -1, None, access.accessibility_index))
     access_false = access.assign(accessibility_index = np.where(access.accessibility_index == -1, access.accessibility_index, None))
     customdata = str_access[['index', 'accessibility_index']]
-    hover_text = "Dostępność komunikacyjna: " if metric=="mm" else "Procent dostępnych szkół: "
+    print(metric)
+    hover_text = "Dostępność komunikacyjna: " if 'new_metric' in metric else "Procent dostępnych szkół: "
     hovertemplate = 'Rejon %{customdata[0]}<br>' + \
                     hover_text + '<b>%{customdata[1]}</b><br>' + "<extra></extra>"
 
