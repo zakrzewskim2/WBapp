@@ -149,10 +149,7 @@ METRIC_WEIGHT_MAPPING = [
 
 def gen_widelki_labels(widelki):
     labels = {}
-    print('a', [0] + list(widelki[:-1]))
-    print('b', widelki)
     for i, (s, e) in enumerate(zip([0] + list(widelki[:-1]), widelki)):
-        print(s, e)
         labels[i] = f'[{s}, {e}) minut'
     labels[len(widelki)] = 'ponad 120 minut'
     return labels
