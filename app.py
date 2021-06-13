@@ -153,7 +153,7 @@ def gen_widelki_labels(widelki):
 def convert_number_to_hist_x(widelki, number):
     for i, (s, e) in enumerate(zip([0] + list(widelki[:-1]), widelki)):
         if number >= s and number < e:
-            return i + (number - s) / (e - s)
+            return i - .5 + (number - s) / (e - s)
 
 app = dash.Dash(__name__, external_stylesheets=[
     dbc.themes.BOOTSTRAP,
