@@ -650,18 +650,19 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
 
     fig = go.Figure([go.Bar(x=[widelki_labels[u] for u in unique], y=counts)])
     
-    dojazdy_no_inf = dojazdy
-    dojazdy_no_inf[np.isinf(dojazdy)] = 120
+    if len(dojazdy) > 0:
+        dojazdy_no_inf = dojazdy
+        dojazdy_no_inf[np.isinf(dojazdy)] = 120
 
-    mean_value = dojazdy_no_inf.mean()
-    fig.add_vline(x=convert_number_to_hist_x(widelki, mean_value), 
-                line_dash="dot",
-                line_color="#d80000",
-                annotation_text=f"Średnia: {round(mean_value, 2)} minuty", 
-                annotation_position="top right",
-                annotation_font_size=12,
-                annotation_font_color="#d80000"
-            )
+        mean_value = dojazdy_no_inf.mean()
+        fig.add_vline(x=convert_number_to_hist_x(widelki, mean_value), 
+                    line_dash="dot",
+                    line_color="#d80000",
+                    annotation_text=f"Średnia: {round(mean_value, 2)} minuty", 
+                    annotation_position="top right",
+                    annotation_font_size=12,
+                    annotation_font_color="#d80000"
+                )
 
     selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(
         ["metric", metric, metric_type, metric_weight, metric_thresholds])
