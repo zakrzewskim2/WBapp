@@ -1,4 +1,4 @@
-Numer,Nazwa,Typ,Typ ogólny,Poziom,Dzielnica,Ulica,Numer budynku,Numer lokalu,Kod pocztowy,Długość geograficzna,Szerokość geograficzna,Publiczność,Liczba uczniów,Min,Max,Avg
+Numer szkoły,Nazwa,Typ,Typ ogólny,Poziom,Dzielnica,Ulica,Numer budynku,Numer lokalu,Kod pocztowy,Długość geograficzna,Szerokość geograficzna,Publiczność,Liczba uczniów,Min,Max,Avg
 1,PRZEDSZKOLE NR 131,Przedszkole,Unused,Unclassified,Warszawa,ul. Sierpecka,9A,,01-589,20.97738741636805,52.2699179,publiczna,109.0,,,
 4,PRZEDSZKOLE Z ODDZIAŁAMI INTEGRACYJNYMI NR 310,Przedszkole,Unused,Unclassified,Warszawa,ul. Jana Brożka,17,,01-451,20.93820015,52.2417422,publiczna,128.0,,,
 6,PRZEDSZKOLE NR 135,Przedszkole,Unused,Unclassified,Warszawa,ul. Emanuela Ringelbluma,1,,01-410,20.950492638647944,52.2447435,publiczna,75.0,,,

@@ -18,7 +18,7 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'stops_in_rejon.json'), encoding='
     stops_in_rejon = json.load(json_file)
 
 schools_in_rejon = pd.read_csv(os.path.join(
-    THIS_FOLDER, 'assets', 'schools_in_rejon.csv'))
+    THIS_FOLDER, 'assets', 'schools_in_rejon.csv'), index_col=0)
 
 schools_with_progi = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
@@ -45,7 +45,7 @@ def build_map(metric, options, schools_options, selceted_region):
     access_true = access.assign(accessibility_index = np.where(access.accessibility_index == -1, None, access.accessibility_index))
     access_false = access.assign(accessibility_index = np.where(access.accessibility_index == -1, access.accessibility_index, None))
     customdata = str_access[['index', 'accessibility_index']]
-    print(metric)
+    #print(metric)
     hover_text = "Dostępność komunikacyjna: " if 'new_metric' in metric else "Procent dostępnych szkół: "
     hovertemplate = 'Rejon %{customdata[0]}<br>' + \
                     hover_text + '<b>%{customdata[1]}</b><br>' + "<extra></extra>"
@@ -59,7 +59,8 @@ def build_map(metric, options, schools_options, selceted_region):
                                  zmin=0,
                                  showscale=False,
                                  featureidkey="properties.index",
-                                 marker={'opacity': 0.7}, below=False)
+                                 marker={'opacity': 0.7}, below=False,
+                                 )
         fig.add_choroplethmapbox(colorscale='Balance', geojson=rejony_borders, customdata=customdata,
                                  hovertemplate=hovertemplate,
                                  locations=access_true["index"],
@@ -110,7 +111,7 @@ def build_map(metric, options, schools_options, selceted_region):
             num_of_traces_to_add_for_some_reason-=1
         else:
             if 'school_lic' in schools_options:
-                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Unnamed: 0"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Liceum ogólnokształcące"]["Unnamed: 0"]))]
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Liceum ogólnokształcące"]["Numer szkoły"]))]
                 fig.add_scattermapbox(
                 lat=selected_schools['lat'],
                 lon=selected_schools['lon'],
@@ -122,7 +123,7 @@ def build_map(metric, options, schools_options, selceted_region):
                 )
                 num_of_traces_to_add_for_some_reason-=1
             if 'school_podst' in schools_options:
-                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Unnamed: 0"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Szkoła podstawowa"]["Unnamed: 0"]))]
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Szkoła podstawowa"]["Numer szkoły"]))]
                 fig.add_scattermapbox(
                 lat=selected_schools['lat'],
                 lon=selected_schools['lon'],
@@ -134,7 +135,7 @@ def build_map(metric, options, schools_options, selceted_region):
                 )
                 num_of_traces_to_add_for_some_reason-=1
             if 'school_tech' in schools_options:
-                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Unnamed: 0"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Technikum"]["Unnamed: 0"]))]
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Technikum"]["Numer szkoły"]))]
                 fig.add_scattermapbox(
                 lat=selected_schools['lat'],
                 lon=selected_schools['lon'],

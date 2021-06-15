@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# %%
+#%%
 import dash
 from dash_bootstrap_components._components.Col import Col
 from dash_bootstrap_components._components.Row import Row
@@ -7,7 +6,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 import dash_daq as daq
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output, State, ALL, MATCH
 from dash_html_components.Button import Button
 from dash_html_components.Div import Div
 from numpy.core.defchararray import count
@@ -51,13 +50,10 @@ METRIC_MAPPING = [
     {'label': 'procentowa', 'value': 'percentage_metric'}
 ]
 
-# schools_with_progi_with_S = schools_with_progi
-# schools_with_progi_with_S['Id'] = np.char.add(
-#     'S', schools_with_progi_with_S.Numer.astype(int))
-schools_with_progi_Num_Type = schools_with_progi.loc[:, ['Numer', 'Typ']]
+schools_with_progi_Num_Type = schools_with_progi.loc[:, ['Numer szkoły', 'Typ']]
 
 dojazdy_merged = schools_with_progi_Num_Type.merge(
-    dojazdy_info, left_on='Numer', right_on='school')
+    dojazdy_info, left_on='Numer szkoły', right_on='school')
 
 button_names = []
 # %%
@@ -83,48 +79,48 @@ METRIC_SCHOOL_TYPE_MAPPING = [
 ]
 
 SCHOOL_TYPE_MAPPING = {'OUT': ['Placówka doskonalenia nauczycieli',
-                                          'Młodzieżowy Ośrodek Socjoterapii ze szkołami',
-                                          'Biblioteki pedagogiczne',
-                                          'Pozaszkolna placówka specjalistyczna',
-                                          'Bursa',
-                                          'Młodzieżowy Ośrodek Wychowawczy',
-                                          'Zespół szkół i placówek oświatowych',
-                                          'Specjalny Ośrodek Szkolno-Wychowawczy',
-                                          'Poradnia specjalistyczna',
-                                          'Szkoła policealna',
-                                          'Szkolne schronisko młodzieżowe',
-                                          'Młodzieżowy dom kultury',
-                                          'Niepubliczna placówka oświatowo-wychowawcza w systemie oświaty',
-                                          'Poradnia psychologiczno-pedagogiczna',
-                                          'Szkoła specjalna przysposabiająca do pracy',
-                                          'Ognisko pracy pozaszkolnej',
-                                          'Policealna szkoła plastyczna',
-                                          'Ogród jordanowski',
-                                          'Ośrodek Rewalidacyjno-Wychowawczy',
-                                          'Międzyszkolny ośrodek sportowy',
-                                          'Specjalny Ośrodek Wychowawczy',
-                                          'Pałac młodzieży',
-                                          'Policealna szkoła muzyczna'],
-                                  'PRZ': ['Przedszkole',
-                                          'Punkt przedszkolny',
-                                          'Zespół wychowania przedszkolnego'],
-                                  'POD': ['Szkoła podstawowa'],
-                                  'ZAW': ['Branżowa szkoła I stopnia',
-                                          'Placówka Kształcenia Ustawicznego - bez szkół',
-                                          'Placówka Kształcenia Ustawicznego ze szkołami',
-                                          'Centrum Kształcenia Zawodowego',
-                                          'Bednarska Szkoła Realna',
-                                          'Branżowa szkoła II stopnia'],
-                                  'LIC': ['Liceum ogólnokształcące'],
-                                  'TEC': ['Technikum'],
-                                  'MUZ': ['Szkoła muzyczna I stopnia',
-                                          'Szkoła muzyczna II stopnia',
-                                          'Ogólnokształcąca szkoła muzyczna II stopnia',
-                                          'Ogólnokształcąca szkoła muzyczna I stopnia',
-                                          'Inna szkoła artystyczna',
-                                          'Ogólnokształcąca szkoła baletowa',
-                                          'Placówki artystyczne (ognisko artystyczne)',
-                                          'Liceum sztuk plastycznych']}
+                               'Młodzieżowy Ośrodek Socjoterapii ze szkołami',
+                               'Biblioteki pedagogiczne',
+                               'Pozaszkolna placówka specjalistyczna',
+                               'Bursa',
+                               'Młodzieżowy Ośrodek Wychowawczy',
+                               'Zespół szkół i placówek oświatowych',
+                               'Specjalny Ośrodek Szkolno-Wychowawczy',
+                               'Poradnia specjalistyczna',
+                               'Szkoła policealna',
+                               'Szkolne schronisko młodzieżowe',
+                               'Młodzieżowy dom kultury',
+                               'Niepubliczna placówka oświatowo-wychowawcza w systemie oświaty',
+                               'Poradnia psychologiczno-pedagogiczna',
+                               'Szkoła specjalna przysposabiająca do pracy',
+                               'Ognisko pracy pozaszkolnej',
+                               'Policealna szkoła plastyczna',
+                               'Ogród jordanowski',
+                               'Ośrodek Rewalidacyjno-Wychowawczy',
+                               'Międzyszkolny ośrodek sportowy',
+                               'Specjalny Ośrodek Wychowawczy',
+                               'Pałac młodzieży',
+                               'Policealna szkoła muzyczna'],
+                       'PRZ': ['Przedszkole',
+                               'Punkt przedszkolny',
+                               'Zespół wychowania przedszkolnego'],
+                       'POD': ['Szkoła podstawowa'],
+                       'ZAW': ['Branżowa szkoła I stopnia',
+                               'Placówka Kształcenia Ustawicznego - bez szkół',
+                               'Placówka Kształcenia Ustawicznego ze szkołami',
+                               'Centrum Kształcenia Zawodowego',
+                               'Bednarska Szkoła Realna',
+                               'Branżowa szkoła II stopnia'],
+                       'LIC': ['Liceum ogólnokształcące'],
+                       'TEC': ['Technikum'],
+                       'MUZ': ['Szkoła muzyczna I stopnia',
+                               'Szkoła muzyczna II stopnia',
+                               'Ogólnokształcąca szkoła muzyczna II stopnia',
+                               'Ogólnokształcąca szkoła muzyczna I stopnia',
+                               'Inna szkoła artystyczna',
+                               'Ogólnokształcąca szkoła baletowa',
+                               'Placówki artystyczne (ognisko artystyczne)',
+                               'Liceum sztuk plastycznych']}
 
 METRIC_TIME_MAPPING = [
     {'label': '15 minut.', 'value': 'time-15'},
@@ -143,6 +139,7 @@ METRIC_WEIGHT_MAPPING = [
     {'label': 'nie ważona', 'value': 'weight-False'}
 ]
 
+
 def gen_widelki_labels(widelki):
     labels = {}
     for i, (s, e) in enumerate(zip([0] + list(widelki[:-1]), widelki)):
@@ -150,10 +147,12 @@ def gen_widelki_labels(widelki):
     labels[len(widelki)] = 'ponad 120 minut'
     return labels
 
+
 def convert_number_to_hist_x(widelki, number):
     for i, (s, e) in enumerate(zip([0] + list(widelki[:-1]), widelki)):
         if number >= s and number < e:
             return i - .5 + (number - s) / (e - s)
+
 
 app = dash.Dash(__name__, external_stylesheets=[
     dbc.themes.BOOTSTRAP,
@@ -205,13 +204,25 @@ def generate_table(df_dict, width, name=""):
                 ) for col in df_dict.keys()])])]
     )], style={
         'width': width,
-        'height': '96%',
+        'height': '93%',
         'overflow-y': 'scroll',
         'overflow': 'scroll',
         'margin': '0px 5px 0px 0px'
     }
     )
 
+def generate_static_table(df_dict):
+    num_col = df_dict.shape[1]
+    return html.Table(
+        # Header
+        [html.Tr([html.Th(style={"width" : "20%"})] + [html.Th(col, style={"width" : f"{80/num_col}%"}) for col in df_dict.columns]) ] +
+        # Body
+        [html.Tr(
+            [html.Td(html.Button("Zaznacz",  id={'type' : 'select-region', 'index' : f'{df_dict.iloc[i,0]}'}, style={"background-color" : "#36ba3d", "width" : "100%"}),style={"width" : "20%"})] + [ 
+                html.Td(df_dict.iloc[i][col], style={"width" : f"{80/num_col}%"}) for col in df_dict.columns
+            ], style={"border" : "1px solid black"}
+        ) for i in range(len(df_dict))], style={"border" : "1px solid black"}
+    )
 
 app.layout = html.Div(
     children=[
@@ -281,76 +292,54 @@ app.layout = html.Div(
                                                'modeBarButtonsToRemove': ['select2d', 'lasso2d'],
                                                'scrollZoom': False
                                            },
-                                           style={"height": "100%"}
+                                           style={"height": "100%"},
                                        ),
                                        html.Div(id="output")
                                    ], style={'max-height': '100%', 'width': '35%'}
                                ),
-                               html.Div(
-                                   children=[
-                                       html.Div(
-                                           children=[
-                                               html.Div(
-                                                   html.Plaintext(
-                                                       "Informacje o przystankach",
-                                                       style={
-                                                           'font': '14pt Arial Black',
-                                                           'margin': "0px 0px 0px 15px",
-                                                       }
-                                                   )
-                                               ),
-                                               html.Div(
-                                                   id="stops-info-table",
-                                                   style={
-                                                       'margin': "0px 0px 0px 5px",
-                                                       'width': '100%',
-                                                       'height': '100%'
-                                                   }
-                                               )
-                                           ],
-                                           style={
-                                               'border': '1px solid black',
-                                               'float': 'left',
-                                               'width': '50%',
-                                               'height': '100%'
-                                           }
-                                       ),
-                                       html.Div(
-                                           children=[
-                                               html.Div(
-                                                   html.Plaintext(
-                                                       "Informacje o szkołach",
-                                                       style={
-                                                           'font': '14pt Arial Black',
-                                                           'margin': "0px 0px 0px 15px",
-                                                       }
-                                                   )
-                                               ),
-                                               html.Div(
-                                                   id="schools-info-table",
-                                                   style={
-                                                       'margin': "0px 0px 0px 5px",
-                                                       'width': '100%',
-                                                       'height': '100%'
-                                                   }
-                                               ),
+                               html.Div(children=[
 
-                                           ],
-                                           style={
-                                               'border': '1px solid black',
-                                               'float': 'left',
-                                               'width': '50%',
-                                               'height': '100%'
-                                           }
+                                   html.Plaintext(id='hist-interval-output', style={
+                                       'display': 'inline-block', 'fontSize': '12pt'}),
+                                   html.Div(
+                                       dcc.Slider(
+                                           id='hist-interval',
+                                           value=10,
+                                           min=3,
+                                           max=60,
+                                           # step=None,
+                                           marks={
+                                               3: '3',
+                                               5: '5',
+                                               10: '10',
+                                               15: '15',
+                                               20: '20',
+                                               30: '30',
+                                               40: '40',
+                                               60: '60',
+                                           },
+                                           # tooltip = { 'placement': 'bottom' }
+                                       ), style={"width": "100%"}
+                                   ),
+
+                                   html.Div(children=[
+                                       dcc.Graph(
+                                           id='histogram',
+                                           config={
+                                               'modeBarButtonsToRemove': ['select2d', 'lasso2d'],
+                                               'scrollZoom': False
+                                           },
+                                           style={"height": "100%"}
                                        )
-                                   ],
-                                   style={
-                                       'border': '1px solid black',
-                                       'height': '100%',
-                                       'max-height': '100%',
-                                       'width': '65%'
-                                   })
-                           ], style={"height": "60%", "display": "flex"}),
+                                   ])
+
+                               ], style={"flex-grow": "1", "display": "flex", "flex-direction": "column", "align-items": "center"}),
+                            html.Div(
+                                id = "metric-values-table",
+                                style={"width" : "400px", "height" : "100%", "overflow-x" : "auto", "overflow-y" : "auto"}
+                            )
+                           ], style={"height": "60%", "display": "flex"}
+                           ),
                            html.Div(
                                children=[
                                    html.Plaintext("Typ metryki ", style={
@@ -405,42 +394,72 @@ app.layout = html.Div(
                                        " progi.", id="plaintext-thresholds", style=dict(display='none'))
                                ]
                            ),
-                            html.Div(
-                            [
-                                html.Plaintext(id='hist-interval-output', style={
-                                    'display': 'inline-block', 'fontSize': '12pt'}),
-                                dcc.Slider(
-                                    id='hist-interval',
-                                    value=10,
-                                    min=3,
-                                    max=60,
-                                    # step=None,
-                                    marks={
-                                        3: '3',
-                                        5: '5',
-                                        10: '10',
-                                        15: '15',
-                                        20: '20',
-                                        30: '30',
-                                        40: '40',
-                                        60: '60',
-                                    }, 
-                                    # tooltip = { 'placement': 'bottom' }
-                                ),
-                            ],
-                            style={"display": "grid", "grid-template-columns": "20% 80%"}),
                            html.Div(
                                children=[
-                                   html.Div(children=[
-                                       dcc.Graph(
-                                           id='histogram',
-                                           config={
-                                               'modeBarButtonsToRemove': ['select2d', 'lasso2d'],
-                                               'scrollZoom': False
-                                           },
-                                           style={"height": "100%"}
-                                       ),
-                                   ]),
+                                   html.Div(
+                                       children=[
+                                           html.Div(
+                                               children=[
+                                                   html.Div(
+                                                       html.Plaintext(
+                                                           "Informacje o przystankach",
+                                                           style={
+                                                               'font': '14pt Arial Black',
+                                                               'margin': "0px 0px 0px 15px",
+                                                           }
+                                                       )
+                                                   ),
+                                                   html.Div(
+                                                       id="stops-info-table",
+                                                       style={
+                                                           'margin': "0px 0px 0px 5px",
+                                                           'width': '100%',
+                                                           'height': '100%'
+                                                       }
+                                                   )
+                                               ],
+                                               style={
+                                                   'border': '1px solid black',
+                                                   'float': 'left',
+                                                   'width': '50%',
+                                                   'height': '100%'
+                                               }
+                                           ),
+                                           html.Div(
+                                               children=[
+                                                   html.Div(
+                                                       html.Plaintext(
+                                                           "Informacje o szkołach",
+                                                           style={
+                                                               'font': '14pt Arial Black',
+                                                               'margin': "0px 0px 0px 15px",
+                                                           }
+                                                       )
+                                                   ),
+                                                   html.Div(
+                                                       id="schools-info-table",
+                                                       style={
+                                                           'margin': "0px 0px 0px 5px",
+                                                           'width': '100%',
+                                                           'height': '100%'
+                                                       }
+                                                   ),
+
+                                               ],
+                                               style={
+                                                   'border': '1px solid black',
+                                                   'float': 'left',
+                                                   'width': '50%',
+                                                   'height': '100%'
+                                               }
+                                           )
+                                       ],
+                                       style={
+                                           'border': '1px solid black',
+                                           'height': '100%',
+                                           'max-height': '100%',
+                                           'width': '65%'
+                                       }),
                                    html.Div(
                                        children=[
                                            html.Div(
@@ -473,9 +492,9 @@ app.layout = html.Div(
                            ),
                            html.Div("[10,20,30,40,50,60,70,80,90,100,110,120]",
                                     id='widelki-selection', style={'display': 'none'}),
-                           html.Div(id='selected-region',
-                                    style={'display': 'none'}, children=''),
                            html.Div(id='selected-region-indices',
+                                    style={'display': 'none'}, children=''),
+                           html.Div(id='selected-button-indices',
                                     style={'display': 'none'}, children=''),
                            html.Div(id='scroll-blocker',
                                     className='scroll'),
@@ -484,7 +503,8 @@ app.layout = html.Div(
                            html.Div(id='dojazdy_button_ids',
                                     style={'display': 'none'}),
                            html.Div(id='empty', style={'display': 'none'}),
-                           html.Div(id='empty2', style={'display': 'none'})
+                           html.Div(id='empty2', style={'display': 'none'}),
+                           html.Div(id='empty3', style={'display': 'none'})
                        ]
                    ),
                ]
@@ -543,7 +563,82 @@ app.clientside_callback(
         Input("dojazdy_button_ids", "children"),
     ]
 )
+app.clientside_callback(
+    """
+    function setup_new_stuff() {
+        for (let i = 0; i < 800; i++) {
+            var button = document.getElementById('{"index":"' + i + '","type":"select-region"}');
+            if (button === null || button === undefined) {
+                continue;
+            }
+            button.addEventListener("click", change_button, false);
+        }
+        return 0;
+    }
+    function change_button(event) {
+        var button_to_change = document.getElementById(event.target.id);
+        if (button_to_change.innerHTML == "Zaznacz") {
+            button_to_change.innerHTML = "Ukryj";
+            button_to_change.style.backgroundColor = "#de4545";
+        } else {
+            button_to_change.innerHTML = "Zaznacz";
+            button_to_change.style.backgroundColor = "#36ba3d";
+        }
+    }
+    """,
+    [Output("empty3", "children")],
+    [
+        Input("metric-values-table", "children"),
+    ]
+)
 
+
+
+@app.callback(
+    [
+        Output('selected-region-indices', 'children'),
+        Output('selected-button-indices', 'children')
+    ],
+    [
+        Input({'type' : 'select-region', 'index' : ALL}, 'n_clicks'),
+        Input('selected-region-indices', 'children'),
+        Input('map', 'selectedData'),
+        Input('selected-button-indices', 'children')
+    ])
+def select_region(values, selectedindices, selectedregion, buttonindices):
+    if selectedindices == '':
+        selectedindices = []
+    if buttonindices == '':
+        buttonindices = []
+    ctx = dash.callback_context
+    # selected_region = [item['location'] for item in selectedregion['points']]
+    if selectedregion is None:
+        output_indices = buttonindices
+    else:
+        selected_region_indices = [item['pointIndex'] for item in selectedregion['points']]
+        output_indices = list(set(selected_region_indices).union(set(buttonindices)))
+
+    if not ctx.triggered:
+        return output_indices, buttonindices
+    else:
+        if len(values) > 0 and values == [None]*len(values):
+            return output_indices, buttonindices
+        for triggered in ctx.triggered:
+            eval_result = eval(triggered["prop_id"].split(".")[0])
+            if type(eval_result) == dict:
+                clicked_region = eval_result["index"] 
+                if clicked_region in buttonindices:
+                    buttonindices.remove(clicked_region)
+                else:
+                    buttonindices.append(clicked_region)
+                if selectedregion is None:
+                    output_indices = buttonindices
+                else:
+                    selected_region_indices = [item['pointIndex'] for item in selectedregion['points']]
+                    output_indices = list(set(selected_region_indices).union(set(buttonindices)))
+                return output_indices, buttonindices
+            else:
+                return output_indices, buttonindices
 
 @ app.callback(
     [
@@ -565,63 +660,63 @@ app.clientside_callback(
         Input('widelki-selection', 'children')
     ])
 def update_map(metric, metric_weight, metric_type, metric_time, metric_thresholds, options, schools_options, selceted_region, widelki_string):
-    stops={}
-    schools={}
-    stop_numbers=[]
-    new_button_ids=[]
+    stops = {}
+    schools = {}
+    stop_numbers = []
+    new_button_ids = []
     for i in selceted_region:
-        reg_num="Rejon numer: " + str(i)
+        reg_num = "Rejon numer: " + str(i)
         try:
-            stops[reg_num]={}
+            stops[reg_num] = {}
             for stop in stops_in_rejon[str(i)]:
                 stop_numbers.append(int(stop))
-                stops[reg_num][stop]={}
-                stop_df=stops_info.loc[stops_info["Unnamed: 0"] == str(
+                stops[reg_num][stop] = {}
+                stop_df = stops_info.loc[stops_info["Unnamed: 0"] == str(
                     int(stop))]
                 if stop_df.empty:
-                    stops[reg_num][stop]["Nazwa"]=f"N/A (numer {stop})"
-                    stops[reg_num][stop]["Numer"]="N/A"
-                    stops[reg_num][stop]["Linie"]={}
+                    stops[reg_num][stop]["Nazwa"] = f"N/A (numer {stop})"
+                    stops[reg_num][stop]["Numer"] = "N/A"
+                    stops[reg_num][stop]["Linie"] = {}
                     continue
-                stops[reg_num][stop]["Nazwa"]=stop_df["name"].values[0]
+                stops[reg_num][stop]["Nazwa"] = stop_df["name"].values[0]
                 new_button_ids.append("button_id_" + stop_df["name"].values[0])
-                stops[reg_num][stop]["Numer"]=stop_df["Unnamed: 0"].values[0]
-                stops[reg_num][stop]["Linie"]={}
+                stops[reg_num][stop]["Numer"] = stop_df["Unnamed: 0"].values[0]
+                stops[reg_num][stop]["Linie"] = {}
                 for k, v in ast.literal_eval(stop_df["lines"].values[0]).items():
-                    linia_num="Linia numer: " + str(k)
-                    stops[reg_num][stop]["Linie"][linia_num]={}
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]={}
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Nazwa"]=k
+                    linia_num = "Linia numer: " + str(k)
+                    stops[reg_num][stop]["Linie"][linia_num] = {}
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"] = {}
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Nazwa"] = k
                     new_button_ids.append(
                         "button_id_" + k + stop_df["name"].values[0])
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Typ"]=v["type"]
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Godziny odjazdu"]=v["hours"]
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Odjazd z przystanku"]="Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Typ"] = v["type"]
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Godziny odjazdu"] = v["hours"]
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Odjazd z przystanku"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
                         v["direction_from"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"] == str(v["direction_from"])]["name"].values[0]
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Kierunek"]="Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
+                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Kierunek"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
                         v["direction_to"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"] == str(v["direction_to"])]["name"].values[0]
         except:
-            stops[reg_num]={}
+            stops[reg_num] = {}
         try:
             schools[reg_num] = {}
             for school in schools_in_rejon[str(i)]:
-                schools[reg_num][school] = schools_with_progi.loc[schools_with_progi.Numer == school].squeeze()
+                schools[reg_num][school] = schools_with_progi.loc[schools_with_progi["Numer szkoły"] == school].squeeze()
                 new_button_ids.append(
-                    "button_id_" + schools_with_progi.loc[schools_with_progi.Numer == school]["Nazwa"].values[0])
+                    "button_id_" + schools_with_progi.loc[schools_with_progi["Numer szkoły"] == school]["Nazwa"].values[0])
         except:
             schools[reg_num] = {}
-
 
     widelki = np.array([]) if widelki_string is None else np.array(
         eval(widelki_string))
     widelki_labels = gen_widelki_labels(widelki)
-    
+
     if metric_type != 'ALL':
         school_types = []
         for part in metric_type.split('-'):
             school_types += SCHOOL_TYPE_MAPPING[part]
-        
-        dojazdy_merged_filtered = dojazdy_merged.loc[np.isin(dojazdy_merged.Typ, school_types)]
+
+        dojazdy_merged_filtered = dojazdy_merged.loc[np.isin(
+            dojazdy_merged.Typ, school_types)]
     else:
         dojazdy_merged_filtered = dojazdy_merged
 
@@ -649,20 +744,20 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
     unique = new_unique
 
     fig = go.Figure([go.Bar(x=[widelki_labels[u] for u in unique], y=counts)])
-    
+
     if len(dojazdy) > 0:
         dojazdy_no_inf = dojazdy
         dojazdy_no_inf[np.isinf(dojazdy)] = 120
 
         mean_value = dojazdy_no_inf.mean()
-        fig.add_vline(x=convert_number_to_hist_x(widelki, mean_value), 
-                    line_dash="dot",
-                    line_color="#d80000",
-                    annotation_text=f"Średnia: {round(mean_value, 2)} minuty", 
-                    annotation_position="top",
-                    annotation_font_size=12,
-                    annotation_font_color="#d80000"
-                )
+        fig.add_vline(x=convert_number_to_hist_x(widelki, mean_value),
+                      line_dash="dot",
+                      line_color="#d80000",
+                      annotation_text=f"Średnia: {round(mean_value, 2)} minuty",
+                      annotation_position="top",
+                      annotation_font_size=12,
+                      annotation_font_color="#d80000"
+                      )
 
     selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(
         ["metric", metric, metric_type, metric_weight, metric_thresholds])
@@ -695,7 +790,7 @@ def display_dojazdy_table(n_click, widelki_string, selceted_region):
     widelki = np.array([]) if widelki_string is None else np.array(
         eval(widelki_string))
     widelki_labels = gen_widelki_labels(widelki)
-    
+
     dojazdy = {}
     for v in widelki_labels.values():
         dojazdy[v] = {}
@@ -752,23 +847,6 @@ def metric_update(selected_metric):
 
 @app.callback(
     [
-        Output('selected-region', 'children'),
-        Output('selected-region-indices', 'children')
-    ],
-    [
-        Input('map', 'selectedData')
-    ])
-def select_region(selectedregion):
-    if selectedregion is None:
-        return [], []
-    selected_region = [item['location'] for item in selectedregion['points']]
-    selected_region_indices = [item['pointIndex']
-                               for item in selectedregion['points']]
-    return selected_region, selected_region_indices
-
-
-@app.callback(
-    [
         Output('hist-interval-output', 'children'),
         Output('widelki-selection', 'children'),
     ],
@@ -778,6 +856,29 @@ def select_region(selectedregion):
 def change_interval(hist_interval):
     values = list(range(0, 120, hist_interval))[1:] + [120]
     return f'Podziałka histogramu: {hist_interval} minut', str(values)
+
+@app.callback(
+    Output('metric-values-table', 'children'),
+    [
+        Input('metric', 'value'),
+        Input('metric-weight', 'value'),
+        Input('metric-school-type', 'value'),
+        Input('metric-time', 'value'),
+        Input('metric-thresholds', 'value')
+    ])
+def generate_metric_table(metric, metric_weight, metric_type, metric_time, metric_thresholds):
+    selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(
+        ["metric", metric, metric_type, metric_weight, metric_thresholds])
+    selected_metric += ".csv"
+    metric_values = pd.read_csv(f'assets/metrics/{selected_metric}', index_col=0)
+    metric_values.rename(columns={"index" : "Numer rejonu", "accessibility_index" : "Wartość metryki"}, inplace=True)
+    metric_values = metric_values.loc[metric_values["Wartość metryki"] != -1]
+    metric_values.sort_values("Wartość metryki", inplace=True, ascending=False)
+    metric_values["Wartość metryki"] = np.round(metric_values["Wartość metryki"], decimals=3)
+
+    return generate_static_table(metric_values)
+
+
 
 
 if __name__ == '__main__':
