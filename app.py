@@ -1,4 +1,4 @@
-#%%
+# %%
 import dash
 from dash_bootstrap_components._components.Col import Col
 from dash_bootstrap_components._components.Row import Row
@@ -43,34 +43,19 @@ stops_info = stops_info.astype({'Unnamed: 0': 'str'})
 dojazdy_info = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'best_stats.csv'), encoding='utf-8', index_col=0)
 
-stops_name_info = stops_info.rename(columns={"Unnamed: 0" : "number"})
+stops_name_info = stops_info.rename(columns={"Unnamed: 0": "number"})
 stops_name_info = stops_name_info[["number", "name"]]
 dojazdy_info.fillna(float("inf"), inplace=True)
 dojazdy_info.source_stop = dojazdy_info.source_stop.astype(float)
 stops_name_info.number = stops_name_info.number.astype(float)
-# #%%
-# dojazdy = dojazdy_info.loc[np.isin(dojazdy_info.source_stop, [2051, 2182, 2221, 2222, 2374, 2375, 2376, 2377, 2430])]
-# best_lens = dojazdy.groupby("school")["TOTAL_LEN"].min().rename("best_len").reset_index(drop=False)
-# dojazdy = dojazdy.merge(best_lens, on="school")
-# df = dojazdy.loc[dojazdy.TOTAL_LEN == dojazdy.best_len]
-# df = df.merge(schools_with_progi, left_on="school", right_on="Numer szkoły")
-# df = df.merge(stops_name_info, left_on="source_stop", right_on="number")
-# df = df.merge(stops_name_info, left_on="best_end_stop", right_on="number", how="left")
-# df = df[["Nazwa", "name_x", "name_y","PUBLIC","WALK", "WAIT","GETON","LEN","WALK_TO_SCHOOL", "TOTAL_LEN"]] \
-# .rename(columns={"Nazwa" : "Nazwa szkoły", "name_x" : "Najlepszy przystanek początkowy", "name_y" : "Najlepszy przystanek końcowy", 
-#     "TOTAL_LEN" : "Całkowita długość dojazdu", "LEN" : "Czas dojazdu do przystanku końcowego", "PUBLIC" : "Przejazdy komunikacją miejską",
-#     "WALK" : "Przejścia piesze", "WAIT" : "Czas oczekiwania","GETON" : "Rezerwa na przesiadki","WALK_TO_SCHOOL" : "Czas dojścia do szkoły z przystanku końcowego"})
-# df.sort_values("Całkowita długość dojazdu")
-# df.fillna("N/A",inplace=True)
-# df = pd.DataFrame(np.where(df==np.inf,"N/A",df), columns=df.columns)
-# df["Całkowita długość dojazdu"] = np.where(df["Całkowita długość dojazdu"]=="N/A", "powyżej 120 min", df["Całkowita długość dojazdu"])
-#%%
+
 METRIC_MAPPING = [
     {'label': 'nowa', 'value': 'new_metric'},
     {'label': 'procentowa', 'value': 'percentage_metric'}
 ]
 
-schools_with_progi_Num_Type = schools_with_progi.loc[:, ['Numer szkoły', 'Typ']]
+schools_with_progi_Num_Type = schools_with_progi.loc[:, [
+    'Numer szkoły', 'Typ']]
 
 dojazdy_merged = schools_with_progi_Num_Type.merge(
     dojazdy_info, left_on='Numer szkoły', right_on='school')
@@ -231,28 +216,31 @@ def generate_table(df_dict, width, name=""):
     }
     )
 
+
 def generate_almost_static_table(df_dict):
     num_col = df_dict.shape[1]
     return html.Table(
         # Header
-        [html.Tr([html.Th(style={"width" : "20%"})] + [html.Th(col, style={"width" : f"{80/num_col}%"}) for col in df_dict.columns]) ] +
+        [html.Tr([html.Th(style={"width": "20%"})] + [html.Th(col, style={"width": f"{80/num_col}%"}) for col in df_dict.columns])] +
         # Body
         [html.Tr(
-            [html.Td(html.Button("Zaznacz",  id={'type' : 'select-region', 'index' : f'{df_dict.iloc[i,0]}'}, style={"background-color" : "#36ba3d", "width" : "100%"}),style={"width" : "20%"})] + [ 
-                html.Td(df_dict.iloc[i][col], style={"width" : f"{80/num_col}%"}) for col in df_dict.columns
-            ], style={"border" : "1px solid black"}
-        ) for i in range(len(df_dict))], style={"border" : "1px solid black"}
+            [html.Td(html.Button("Zaznacz",  id={'type': 'select-region', 'index': f'{df_dict.iloc[i,0]}'}, style={"background-color": "#36ba3d", "width": "100%"}), style={"width": "20%"})] + [
+                html.Td(df_dict.iloc[i][col], style={"width": f"{80/num_col}%"}) for col in df_dict.columns
+            ], style={"border": "1px solid black"}
+        ) for i in range(len(df_dict))], style={"border": "1px solid black"}
     )
+
 
 def generate_static_table(df_dict):
     return html.Table(
         # Header
-        [html.Tr([html.Th(col, style={"paddingRight" : "10px", "border": "1px solid black"}) for col in df_dict.columns], style={"position" : "sticky", "top": "0", "width" : "100%", "background-color" : "white", "border" : "1px solid black"}) ] +
+        [html.Tr([html.Th(col, style={"paddingRight": "10px", "border": "1px solid black", "background": "white", "position": "sticky", "top": "0"}) for col in df_dict.columns], style={"position": "relative", "width": "100%", "border": "1px solid black"})] +
         # Body
         [html.Tr([
-            html.Td(df_dict.iloc[i][col], style={"paddingRight" : "10px"}) for col in df_dict.columns
-        ], style={"border" : "1px solid black"}) for i in range(len(df_dict))]
+            html.Td(df_dict.iloc[i][col], style={"paddingRight": "10px"}) for col in df_dict.columns
+        ], style={"border": "1px solid black"}) for i in range(len(df_dict))]
     )
+
 
 app.layout = html.Div(
     children=[
@@ -268,7 +256,7 @@ app.layout = html.Div(
                                id='map-filters',
                                children=[
                                    html.H5(
-                                       'Filtry:'),
+                                       'Zaznacz na mapie:'),
                                    dcc.Checklist(
                                        id='map-type-checklist',
                                        labelClassName='map-type-checklist-items',
@@ -291,7 +279,7 @@ app.layout = html.Div(
                                id='schools-filters',
                                children=[
                                    html.H5(
-                                       'Filtry szkoły:'),
+                                       'Typ szkoły:'),
                                    dcc.Checklist(
                                        id='school-type-checklist',
                                        labelClassName='school-type-checklist-items',
@@ -313,6 +301,70 @@ app.layout = html.Div(
                                }
                            ),
                            html.Div(children=[
+                               html.Div(children=[
+                                   html.Div(
+                                    id="metric-values-table",
+                                    style={"width": "400px", "height": "75%",
+                                           "overflow-x": "auto", "overflow-y": "auto"}
+                                    ),
+                                   html.Div(children=[
+                                       html.Div(
+                                           children=[
+                                               html.Div(
+                                                   children=[
+                                                       dcc.Slider(
+                                                           id='show-top-x-interval',
+                                                           value=20,
+                                                           min=1,
+                                                           max=50,
+                                                           # step=None,
+                                                           marks={
+                                                               1: '1%',
+                                                               5: '5%',
+                                                               10: '10%',
+                                                               15: '15%',
+                                                               20: '20%',
+                                                               25: '25%',
+                                                               30: '30%',
+                                                               35: '35%',
+                                                               40: '40%',
+                                                               45: '45%',
+                                                               50: '50%',
+                                                           }
+                                                       ),
+                                                       html.Button(
+                                                           "Zaznacz górne 20% rejonów", id="show-top-x-button")
+                                                   ], style={"margin": "10px 0px 10px 0px"}
+                                               ),
+                                               html.Div(
+                                                   children=[
+                                                       dcc.Slider(
+                                                           id='show-bottom-x-interval',
+                                                           value=20,
+                                                           min=1,
+                                                           max=50,
+                                                           # step=None,
+                                                           marks={
+                                                               1: '1%',
+                                                               5: '5%',
+                                                               10: '10%',
+                                                               15: '15%',
+                                                               20: '20%',
+                                                               25: '25%',
+                                                               30: '30%',
+                                                               35: '35%',
+                                                               40: '40%',
+                                                               45: '45%',
+                                                               50: '50%',
+                                                           }
+                                                       ),
+                                                       html.Button(
+                                                           "Zaznacz dolne 20% rejonów", id="show-bottom-x-button")
+                                                   ], style={"margin": "10px 0px 10px 0px"}
+                                               )]
+                                       )
+                                   ], style={"width": "400px", "height": "20%", "textAlign": "center"}
+                                   )]),
                                html.Div(
                                    children=[
                                        dcc.Graph(
@@ -325,10 +377,9 @@ app.layout = html.Div(
                                            style={"height": "100%"},
                                        ),
                                        html.Div(id="output")
-                                   ], style={'max-height': '100%', 'width': '35%'}
+                                   ], style={'max-height': '100%', 'width': '40%', "margin": "0px 0px 0px 20px"}
                                ),
                                html.Div(children=[
-
                                    html.Plaintext(id='hist-interval-output', style={
                                        'display': 'inline-block', 'fontSize': '12pt'}),
                                    html.Div(
@@ -359,15 +410,11 @@ app.layout = html.Div(
                                                'modeBarButtonsToRemove': ['select2d', 'lasso2d'],
                                                'scrollZoom': False
                                            },
-                                           style={"height": "100%"}
+                                           style={"height": "100%"},
                                        )
                                    ])
+                               ], style={"flex-grow": "1", "display": "flex", "flex-direction": "column", "align-items": "center"})
 
-                               ], style={"flex-grow": "1", "display": "flex", "flex-direction": "column", "align-items": "center"}),
-                            html.Div(
-                                id = "metric-values-table",
-                                style={"width" : "400px", "height" : "100%", "overflow-x" : "auto", "overflow-y" : "auto"}
-                            )
                            ], style={"height": "60%", "display": "flex"}
                            ),
                            html.Div(
@@ -516,8 +563,8 @@ app.layout = html.Div(
                                            'float': 'left',
                                            'width': '50%',
                                            'height': '100%',
-                                           'overflow-y' : "auto",
-                                           "overflow-x" : "auto"
+                                           'overflow-y': "auto",
+                                           "overflow-x": "auto"
                                        }
                                    )
                                ], style={"display": "flex", "height": "30%"}
@@ -533,6 +580,8 @@ app.layout = html.Div(
                            html.Div(id='all_button_ids',
                                     style={'display': 'none'}),
                            html.Div(id='dojazdy_button_ids',
+                                    style={'display': 'none'}),
+                           html.Div(id='region_numbers_sorted_by_metric',
                                     style={'display': 'none'}),
                            html.Div(id='empty', style={'display': 'none'}),
                            html.Div(id='empty2', style={'display': 'none'}),
@@ -600,6 +649,55 @@ app.clientside_callback(
 )
 
 
+# @app.callback(
+#     [
+#         Output('selected-region-indices', 'children'),
+#         Output('selected-button-indices', 'children')
+#     ],
+#     [
+#         Input({'type': 'select-region', 'index': ALL}, 'n_clicks'),
+#         Input('selected-region-indices', 'children'),
+#         Input('map', 'selectedData'),
+#         Input('selected-button-indices', 'children')
+#     ])
+# def select_region(values, selectedindices, selectedregion, buttonindices):
+#     if selectedindices == '':
+#         selectedindices = []
+#     if buttonindices == '':
+#         buttonindices = []
+#     ctx = dash.callback_context
+#     # selected_region = [item['location'] for item in selectedregion['points']]
+#     if selectedregion is None:
+#         output_indices = buttonindices
+#     else:
+#         selected_region_indices = [item['pointIndex']
+#                                    for item in selectedregion['points']]
+#         output_indices = list(
+#             set(selected_region_indices).union(set(buttonindices)))
+
+#     if not ctx.triggered:
+#         return output_indices, buttonindices
+#     else:
+#         if len(values) > 0 and values == [None]*len(values):
+#             return output_indices, buttonindices
+#         for triggered in ctx.triggered:
+#             eval_result = eval(triggered["prop_id"].split(".")[0])
+#             if type(eval_result) == dict:
+#                 clicked_region = eval_result["index"]
+#                 if clicked_region in buttonindices:
+#                     buttonindices.remove(clicked_region)
+#                 else:
+#                     buttonindices.append(clicked_region)
+#                 if selectedregion is None:
+#                     output_indices = buttonindices
+#                 else:
+#                     selected_region_indices = [item['pointIndex']
+#                                                for item in selectedregion['points']]
+#                     output_indices = list(
+#                         set(selected_region_indices).union(set(buttonindices)))
+#                 return output_indices, buttonindices
+#             else:
+#                 return output_indices, buttonindices
 
 @app.callback(
     [
@@ -607,33 +705,43 @@ app.clientside_callback(
         Output('selected-button-indices', 'children')
     ],
     [
-        Input({'type' : 'select-region', 'index' : ALL}, 'n_clicks'),
+        Input({'type': 'select-region', 'index': ALL}, 'n_clicks'),
         Input('selected-region-indices', 'children'),
         Input('map', 'selectedData'),
-        Input('selected-button-indices', 'children')
+        Input('selected-button-indices', 'children'),
+        Input('show-top-x-button', 'n_clicks'),
+        Input('show-bottom-x-button', 'n_clicks'),
+    ],
+    [
+        State('show-top-x-interval', 'value'),
+        State('show-bottom-x-interval', 'value'),
+        State('region_numbers_sorted_by_metric', 'children'),
     ])
-def select_region(values, selectedindices, selectedregion, buttonindices):
+def multi_select_region(values, selectedindices, selectedregion, buttonindices, top_n_clicks, bottom_n_clicks, top_threshold, bottom_threshold, sorted_rejony):
     if selectedindices == '':
         selectedindices = []
     if buttonindices == '':
         buttonindices = []
+    if sorted_rejony is None:
+        sorted_rejony = []
     ctx = dash.callback_context
-    # selected_region = [item['location'] for item in selectedregion['points']]
     if selectedregion is None:
         output_indices = buttonindices
     else:
-        selected_region_indices = [item['pointIndex'] for item in selectedregion['points']]
-        output_indices = list(set(selected_region_indices).union(set(buttonindices)))
+        selected_region_indices = [item['pointIndex']
+                                   for item in selectedregion['points']]
+        output_indices = list(
+            set(selected_region_indices).union(set(buttonindices)))
 
     if not ctx.triggered:
         return output_indices, buttonindices
     else:
-        if len(values) > 0 and values == [None]*len(values):
+        if len(values) > 0 and values == [None]*len(values) and top_n_clicks is None and bottom_n_clicks is None:
             return output_indices, buttonindices
         for triggered in ctx.triggered:
-            eval_result = eval(triggered["prop_id"].split(".")[0])
-            if type(eval_result) == dict:
-                clicked_region = eval_result["index"] 
+            try:
+                eval_result = eval(triggered["prop_id"].split(".")[0])
+                clicked_region = eval_result["index"]
                 if clicked_region in buttonindices:
                     buttonindices.remove(clicked_region)
                 else:
@@ -641,11 +749,40 @@ def select_region(values, selectedindices, selectedregion, buttonindices):
                 if selectedregion is None:
                     output_indices = buttonindices
                 else:
-                    selected_region_indices = [item['pointIndex'] for item in selectedregion['points']]
-                    output_indices = list(set(selected_region_indices).union(set(buttonindices)))
+                    selected_region_indices = [item['pointIndex']
+                                               for item in selectedregion['points']]
+                    output_indices = list(
+                        set(selected_region_indices).union(set(buttonindices)))
                 return output_indices, buttonindices
-            else:
+            except:
+                if triggered["prop_id"].split(".")[0] == "show-top-x-button":
+                    if top_n_clicks % 2 == 1:
+                        buttonindices = list(set(buttonindices).union(
+                            set(np.array(sorted_rejony)[:int(top_threshold/100*len(sorted_rejony))])))
+                        output_indices = list(
+                            set(output_indices).union(set(buttonindices)))
+                    else:
+                        selected_top_regions = list(np.array(sorted_rejony)[
+                                                    :int(top_threshold/100*len(sorted_rejony))])
+                        buttonindices = [
+                            elem for elem in buttonindices if elem not in selected_top_regions]
+                        output_indices = [
+                            elem for elem in output_indices if elem not in selected_top_regions]
+                if triggered["prop_id"].split(".")[0] == "show-bottom-x-button":
+                    if bottom_n_clicks % 2 == 1:
+                        buttonindices = list(set(buttonindices).union(
+                            set(np.array(sorted_rejony)[int(bottom_threshold/100*len(sorted_rejony)):])))
+                        output_indices = list(
+                            set(output_indices).union(set(buttonindices)))
+                    else:
+                        selected_top_regions = list(np.array(sorted_rejony)[
+                                                    int(bottom_threshold/100*len(sorted_rejony)):])
+                        buttonindices = [
+                            elem for elem in buttonindices if elem not in selected_top_regions]
+                        output_indices = [
+                            elem for elem in output_indices if elem not in selected_top_regions]
                 return output_indices, buttonindices
+
 
 @ app.callback(
     [
@@ -707,7 +844,8 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
         try:
             schools[reg_num] = {}
             for school in schools_in_rejon[str(i)]:
-                schools[reg_num][school] = schools_with_progi.loc[schools_with_progi["Numer szkoły"] == school].squeeze()
+                schools[reg_num][school] = schools_with_progi.loc[schools_with_progi["Numer szkoły"]
+                                                                  == school].squeeze()
                 new_button_ids.append(
                     "button_id_" + schools_with_progi.loc[schools_with_progi["Numer szkoły"] == school]["Nazwa"].values[0])
         except:
@@ -751,6 +889,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
     unique = new_unique
 
     fig = go.Figure([go.Bar(x=[widelki_labels[u] for u in unique], y=counts)])
+    fig.update_layout(margin=dict(l=15, r=15, t=15, b=15),)
 
     if len(dojazdy) > 0:
         dojazdy_no_inf = dojazdy
@@ -791,23 +930,29 @@ def display_dojazdy_table(n_click, selceted_region):
             return html.Div("Brak informacji"), {"display": "block"}
         for stop in stops_in_rejon[str(i)]:
             stop_numbers.append(int(stop))
-            
-    dojazdy = dojazdy_info.loc[np.isin(dojazdy_info.source_stop, stop_numbers)].sort_values("TOTAL_LEN")
-    best_lens = dojazdy.groupby("school")["TOTAL_LEN"].min().rename("best_len").reset_index(drop=False)
+
+    dojazdy = dojazdy_info.loc[np.isin(
+        dojazdy_info.source_stop, stop_numbers)].sort_values("TOTAL_LEN")
+    best_lens = dojazdy.groupby("school")["TOTAL_LEN"].min().rename(
+        "best_len").reset_index(drop=False)
     dojazdy = dojazdy.merge(best_lens, on="school")
     df = dojazdy.loc[dojazdy.TOTAL_LEN == dojazdy.best_len]
-    df = df.merge(schools_with_progi, left_on="school", right_on="Numer szkoły")
+    df = df.merge(schools_with_progi, left_on="school",
+                  right_on="Numer szkoły")
     df = df.merge(stops_name_info, left_on="source_stop", right_on="number")
-    df = df.merge(stops_name_info, left_on="best_end_stop", right_on="number", how="left")
-    df = df[["Nazwa", "name_x", "name_y","PUBLIC","WALK", "WAIT","GETON","LEN","WALK_TO_SCHOOL", "TOTAL_LEN"]] \
-    .rename(columns={"Nazwa" : "Nazwa szkoły", "name_x" : "Najlepszy przystanek początkowy", "name_y" : "Najlepszy przystanek końcowy", 
-        "TOTAL_LEN" : "Całkowita długość dojazdu", "LEN" : "Czas dojazdu do przystanku końcowego", "PUBLIC" : "Przejazdy komunikacją miejską",
-        "WALK" : "Przejścia piesze", "WAIT" : "Czas oczekiwania","GETON" : "Rezerwa na przesiadki","WALK_TO_SCHOOL" : "Czas dojścia do szkoły z przystanku końcowego"})
+    df = df.merge(stops_name_info, left_on="best_end_stop",
+                  right_on="number", how="left")
+    df = df[["Nazwa", "name_x", "name_y", "PUBLIC", "WALK", "WAIT", "GETON", "LEN", "WALK_TO_SCHOOL", "TOTAL_LEN"]] \
+        .rename(columns={"Nazwa": "Nazwa szkoły", "name_x": "Najlepszy przystanek początkowy", "name_y": "Najlepszy przystanek końcowy",
+                         "TOTAL_LEN": "Całkowita długość dojazdu", "LEN": "Czas dojazdu do przystanku końcowego", "PUBLIC": "Przejazdy komunikacją miejską",
+                         "WALK": "Przejścia piesze", "WAIT": "Czas oczekiwania", "GETON": "Rezerwa na przesiadki", "WALK_TO_SCHOOL": "Czas dojścia do szkoły z przystanku końcowego"})
     df = df.sort_values("Całkowita długość dojazdu")
-    df.fillna("n/a",inplace=True)
-    df = pd.DataFrame(np.where(df==np.inf,"n/a",df), columns=df.columns)
-    df["Całkowita długość dojazdu"] = np.where(df["Całkowita długość dojazdu"]=="n/a", "powyżej 120 min", df["Całkowita długość dojazdu"])
-    df = df.reset_index(drop=True).reset_index(drop=False).rename(columns={"index" : "No."})
+    df.fillna("n/a", inplace=True)
+    df = pd.DataFrame(np.where(df == np.inf, "n/a", df), columns=df.columns)
+    df["Całkowita długość dojazdu"] = np.where(
+        df["Całkowita długość dojazdu"] == "n/a", "powyżej 120 min", df["Całkowita długość dojazdu"])
+    df = df.reset_index(drop=True).reset_index(
+        drop=False).rename(columns={"index": "No."})
     df["No."] += 1
     return generate_static_table(df), {"display": "block"}
 
@@ -822,6 +967,20 @@ def filter_update(selected_filters):
         return {'display': 'block'}
     else:
         return {'display': 'none'}
+
+
+@app.callback(
+    [
+        Output('show-top-x-button', 'children'),
+        Output('show-bottom-x-button', 'children'),
+    ],
+    [
+        Input('show-top-x-interval', 'value'),
+        Input('show-bottom-x-interval', 'value'),
+    ])
+def change_button_threshold(top, bottom):
+
+    return f'Zaznacz górne {top}% rejonów', f'Zaznacz dolne {bottom}% rejonów'
 
 
 @app.callback(
@@ -863,8 +1022,12 @@ def change_interval(hist_interval):
     values = list(range(0, 120, hist_interval))[1:] + [120]
     return f'Podziałka histogramu: {hist_interval} minut', str(values)
 
+
 @app.callback(
-    Output('metric-values-table', 'children'),
+    [
+        Output('metric-values-table', 'children'),
+        Output('region_numbers_sorted_by_metric', 'children')
+    ],
     [
         Input('metric', 'value'),
         Input('metric-weight', 'value'),
@@ -877,18 +1040,19 @@ def generate_metric_table(metric, metric_weight, metric_type, metric_time, metri
     selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(
         ["metric", metric, metric_type, metric_weight, metric_thresholds])
     selected_metric += ".csv"
-    metric_values = pd.read_csv(f'assets/metrics/{selected_metric}', index_col=0)
-    metric_values.rename(columns={"index" : "Numer rejonu", "accessibility_index" : "Wartość metryki"}, inplace=True)
+    metric_values = pd.read_csv(
+        f'assets/metrics/{selected_metric}', index_col=0)
+    metric_values.rename(columns={
+                         "index": "Numer rejonu", "accessibility_index": "Wartość metryki"}, inplace=True)
     metric_values = metric_values.loc[metric_values["Wartość metryki"] != -1]
     metric_values.sort_values("Wartość metryki", inplace=True, ascending=False)
     if "percentage" in selected_metric:
-        metric_values["Wartość metryki"] = np.round(metric_values["Wartość metryki"]*100, decimals=2).astype(str) + "%"
+        metric_values["Wartość metryki"] = np.round(
+            metric_values["Wartość metryki"]*100, decimals=2).astype(str) + "%"
     else:
-        metric_values["Wartość metryki"] = np.round(metric_values["Wartość metryki"], decimals=3)
-
-    return generate_almost_static_table(metric_values)
-
-
+        metric_values["Wartość metryki"] = np.round(
+            metric_values["Wartość metryki"], decimals=3)
+    return generate_almost_static_table(metric_values), list(metric_values["Numer rejonu"])
 
 
 if __name__ == '__main__':
