@@ -43,8 +43,28 @@ stops_info = stops_info.astype({'Unnamed: 0': 'str'})
 dojazdy_info = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'best_stats.csv'), encoding='utf-8', index_col=0)
 
+stops_name_info = stops_info.rename(columns={"Unnamed: 0" : "number"})
+stops_name_info = stops_name_info[["number", "name"]]
 dojazdy_info.fillna(float("inf"), inplace=True)
-
+dojazdy_info.source_stop = dojazdy_info.source_stop.astype(float)
+stops_name_info.number = stops_name_info.number.astype(float)
+# #%%
+# dojazdy = dojazdy_info.loc[np.isin(dojazdy_info.source_stop, [2051, 2182, 2221, 2222, 2374, 2375, 2376, 2377, 2430])]
+# best_lens = dojazdy.groupby("school")["TOTAL_LEN"].min().rename("best_len").reset_index(drop=False)
+# dojazdy = dojazdy.merge(best_lens, on="school")
+# df = dojazdy.loc[dojazdy.TOTAL_LEN == dojazdy.best_len]
+# df = df.merge(schools_with_progi, left_on="school", right_on="Numer szkoły")
+# df = df.merge(stops_name_info, left_on="source_stop", right_on="number")
+# df = df.merge(stops_name_info, left_on="best_end_stop", right_on="number", how="left")
+# df = df[["Nazwa", "name_x", "name_y","PUBLIC","WALK", "WAIT","GETON","LEN","WALK_TO_SCHOOL", "TOTAL_LEN"]] \
+# .rename(columns={"Nazwa" : "Nazwa szkoły", "name_x" : "Najlepszy przystanek początkowy", "name_y" : "Najlepszy przystanek końcowy", 
+#     "TOTAL_LEN" : "Całkowita długość dojazdu", "LEN" : "Czas dojazdu do przystanku końcowego", "PUBLIC" : "Przejazdy komunikacją miejską",
+#     "WALK" : "Przejścia piesze", "WAIT" : "Czas oczekiwania","GETON" : "Rezerwa na przesiadki","WALK_TO_SCHOOL" : "Czas dojścia do szkoły z przystanku końcowego"})
+# df.sort_values("Całkowita długość dojazdu")
+# df.fillna("N/A",inplace=True)
+# df = pd.DataFrame(np.where(df==np.inf,"N/A",df), columns=df.columns)
+# df["Całkowita długość dojazdu"] = np.where(df["Całkowita długość dojazdu"]=="N/A", "powyżej 120 min", df["Całkowita długość dojazdu"])
+#%%
 METRIC_MAPPING = [
     {'label': 'nowa', 'value': 'new_metric'},
     {'label': 'procentowa', 'value': 'percentage_metric'}
@@ -211,7 +231,7 @@ def generate_table(df_dict, width, name=""):
     }
     )
 
-def generate_static_table(df_dict):
+def generate_almost_static_table(df_dict):
     num_col = df_dict.shape[1]
     return html.Table(
         # Header
@@ -222,6 +242,16 @@ def generate_static_table(df_dict):
                 html.Td(df_dict.iloc[i][col], style={"width" : f"{80/num_col}%"}) for col in df_dict.columns
             ], style={"border" : "1px solid black"}
         ) for i in range(len(df_dict))], style={"border" : "1px solid black"}
+    )
+
+def generate_static_table(df_dict):
+    return html.Table(
+        # Header
+        [html.Tr([html.Th(col, style={"paddingRight" : "10px", "border": "1px solid black"}) for col in df_dict.columns], style={"position" : "sticky", "top": "0", "width" : "100%", "background-color" : "white", "border" : "1px solid black"}) ] +
+        # Body
+        [html.Tr([
+            html.Td(df_dict.iloc[i][col], style={"paddingRight" : "10px"}) for col in df_dict.columns
+        ], style={"border" : "1px solid black"}) for i in range(len(df_dict))]
     )
 
 app.layout = html.Div(
@@ -485,7 +515,9 @@ app.layout = html.Div(
                                            'border': '1px solid black',
                                            'float': 'left',
                                            'width': '50%',
-                                           'height': '100%'
+                                           'height': '100%',
+                                           'overflow-y' : "auto",
+                                           "overflow-x" : "auto"
                                        }
                                    )
                                ], style={"display": "flex", "height": "30%"}
@@ -536,31 +568,6 @@ app.clientside_callback(
     [Output("empty", "children")],
     [
         Input("all_button_ids", "children"),
-    ]
-)
-app.clientside_callback(
-    """
-    function setup_stuff(ids) {
-        for (let i = 0; i < ids.length; i++) {
-            var collapse_button = document.getElementById("collapse_button_" + ids[i].substring(10));
-            collapse_button.addEventListener("click", collapse, false);
-        }
-        console.log("asd")
-        return 0;
-    }
-    function collapse(event) {
-        var id = event.target.id.substring(16);
-        var table_to_collapse = document.getElementById("table_to_collapse_" + id);
-        if (table_to_collapse.style.display == "block") {
-        table_to_collapse.style.display = "none";
-        } else {
-        table_to_collapse.style.display = "block";
-        }
-    }
-    """,
-    [Output("empty2", "children")],
-    [
-        Input("dojazdy_button_ids", "children"),
     ]
 )
 app.clientside_callback(
@@ -767,43 +774,42 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
 @app.callback(
     [
         Output('dojazdy-info-table', 'children'),
-        Output('dojazdy-info-table', 'style'),
-        Output('dojazdy_button_ids', 'children')
+        Output('dojazdy-info-table', 'style')
     ],
     [
         Input('dojazdy-info-button', 'n_clicks'),
-        Input('widelki-selection', 'children'),
     ],
     [
         State('selected-region-indices', 'children')
     ])
-def display_dojazdy_table(n_click, widelki_string, selceted_region):
+def display_dojazdy_table(n_click, selceted_region):
     if n_click is None or n_click % 2 == 0:
-        return html.Div(), {"display": "none"}, []
-
-    new_button_ids = []
+        return html.Div(), {"display": "none"}
     stop_numbers = []
     for i in selceted_region:
+        if str(i) not in stops_in_rejon:
+            return html.Div("Brak informacji"), {"display": "block"}
         for stop in stops_in_rejon[str(i)]:
             stop_numbers.append(int(stop))
-
-    widelki = np.array([]) if widelki_string is None else np.array(
-        eval(widelki_string))
-    widelki_labels = gen_widelki_labels(widelki)
-
-    dojazdy = {}
-    for v in widelki_labels.values():
-        dojazdy[v] = {}
-    for i, dojazd in dojazdy_info.loc[np.isin(dojazdy_info.source_stop, stop_numbers)].iterrows():
-        proper_widelek = np.sum(dojazd["TOTAL_LEN"] >= np.array(widelki))
-        new_button_ids.append("button_id_" + dojazd["school"])
-        dojazdy[widelki_labels[proper_widelek]][dojazd["school"]] = {}
-        dojazdy[widelki_labels[proper_widelek]
-                ][dojazd["school"]]["Nazwa"] = dojazd["school"]
-        dojazdy[widelki_labels[proper_widelek]][dojazd["school"]
-                                                ]["Czas dojazdu"] = dojazd["TOTAL_LEN"]
-
-    return generate_table(dojazdy, "99%"), {"display": "block"}, new_button_ids
+            
+    dojazdy = dojazdy_info.loc[np.isin(dojazdy_info.source_stop, stop_numbers)].sort_values("TOTAL_LEN")
+    best_lens = dojazdy.groupby("school")["TOTAL_LEN"].min().rename("best_len").reset_index(drop=False)
+    dojazdy = dojazdy.merge(best_lens, on="school")
+    df = dojazdy.loc[dojazdy.TOTAL_LEN == dojazdy.best_len]
+    df = df.merge(schools_with_progi, left_on="school", right_on="Numer szkoły")
+    df = df.merge(stops_name_info, left_on="source_stop", right_on="number")
+    df = df.merge(stops_name_info, left_on="best_end_stop", right_on="number", how="left")
+    df = df[["Nazwa", "name_x", "name_y","PUBLIC","WALK", "WAIT","GETON","LEN","WALK_TO_SCHOOL", "TOTAL_LEN"]] \
+    .rename(columns={"Nazwa" : "Nazwa szkoły", "name_x" : "Najlepszy przystanek początkowy", "name_y" : "Najlepszy przystanek końcowy", 
+        "TOTAL_LEN" : "Całkowita długość dojazdu", "LEN" : "Czas dojazdu do przystanku końcowego", "PUBLIC" : "Przejazdy komunikacją miejską",
+        "WALK" : "Przejścia piesze", "WAIT" : "Czas oczekiwania","GETON" : "Rezerwa na przesiadki","WALK_TO_SCHOOL" : "Czas dojścia do szkoły z przystanku końcowego"})
+    df = df.sort_values("Całkowita długość dojazdu")
+    df.fillna("n/a",inplace=True)
+    df = pd.DataFrame(np.where(df==np.inf,"n/a",df), columns=df.columns)
+    df["Całkowita długość dojazdu"] = np.where(df["Całkowita długość dojazdu"]=="n/a", "powyżej 120 min", df["Całkowita długość dojazdu"])
+    df = df.reset_index(drop=True).reset_index(drop=False).rename(columns={"index" : "No."})
+    df["No."] += 1
+    return generate_static_table(df), {"display": "block"}
 
 
 @app.callback(
@@ -864,9 +870,10 @@ def change_interval(hist_interval):
         Input('metric-weight', 'value'),
         Input('metric-school-type', 'value'),
         Input('metric-time', 'value'),
-        Input('metric-thresholds', 'value')
+        Input('metric-thresholds', 'value'),
+        Input('metric', 'value')
     ])
-def generate_metric_table(metric, metric_weight, metric_type, metric_time, metric_thresholds):
+def generate_metric_table(metric, metric_weight, metric_type, metric_time, metric_thresholds, selected_metric):
     selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(
         ["metric", metric, metric_type, metric_weight, metric_thresholds])
     selected_metric += ".csv"
@@ -874,9 +881,12 @@ def generate_metric_table(metric, metric_weight, metric_type, metric_time, metri
     metric_values.rename(columns={"index" : "Numer rejonu", "accessibility_index" : "Wartość metryki"}, inplace=True)
     metric_values = metric_values.loc[metric_values["Wartość metryki"] != -1]
     metric_values.sort_values("Wartość metryki", inplace=True, ascending=False)
-    metric_values["Wartość metryki"] = np.round(metric_values["Wartość metryki"], decimals=3)
+    if "percentage" in selected_metric:
+        metric_values["Wartość metryki"] = np.round(metric_values["Wartość metryki"]*100, decimals=2).astype(str) + "%"
+    else:
+        metric_values["Wartość metryki"] = np.round(metric_values["Wartość metryki"], decimals=3)
 
-    return generate_static_table(metric_values)
+    return generate_almost_static_table(metric_values)
 
 
 
