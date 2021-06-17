@@ -210,8 +210,8 @@ def generate_table(df_dict, width, name=""):
     )], style={
         'width': width,
         'height': '93%',
-        'overflow-y': 'auto',
-        'overflow': 'scroll',
+        'overflow-y': "auto",
+        'overflow-x': "auto",
         'margin': '0px 5px 0px 0px'
     }
     )
@@ -501,8 +501,8 @@ app.layout = html.Div(
                                                    'float': 'left',
                                                    'width': '50%',
                                                    'height': '100%',
-                                                #    'overflow-y': "auto",
-                                                #    'overflow-x': "auto"
+                                                   'overflow-y': "auto",
+                                                   'overflow-x': "auto"
                                                }
                                            ),
                                            html.Div(
@@ -532,8 +532,8 @@ app.layout = html.Div(
                                                    'float': 'left',
                                                    'width': '50%',
                                                    'height': '100%',
-                                                #    'overflow-y': "auto",
-                                                #    'overflow-x': "auto"
+                                                   'overflow-y': "auto",
+                                                   'overflow-x': "auto"
                                                }
                                            )
                                        ],
@@ -934,7 +934,6 @@ def display_schools_stops_table(schools_n_click, stops_n_click, selceted_region)
                 schools[reg_num] = {}
         else:
             schools_display = {"display": "none"}
-    print(stops)
     return generate_table(schools, "99%"), schools_display, generate_table(stops, "99%"), stops_display, new_button_ids
 
 @app.callback(
