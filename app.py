@@ -591,7 +591,8 @@ app.layout = html.Div(
                                     style={'display': 'none'}),
                            html.Div(id='empty', style={'display': 'none'}),
                            html.Div(id='empty2', style={'display': 'none'}),
-                           html.Div(id='empty3', style={'display': 'none'})
+                           html.Div(id='empty3', style={'display': 'none'}),
+                           html.Div(id='empty4', style={'display': 'none'})
                        ]
                    ),
                ]
@@ -648,11 +649,72 @@ app.clientside_callback(
         }
     }
     """,
-    [Output("empty3", "children")],
+    [Output("empty2", "children")],
     [
         Input("metric-values-table", "children"),
     ]
 )
+app.clientside_callback(
+    """
+    function change_buttons_top(n_clicks, percentage, sorted_regions) {
+        if (sorted_regions === null || sorted_regions === undefined) {
+            return 0;
+        }
+        indices = sorted_regions.slice(0, Math.floor(percentage/100*sorted_regions.length));
+        for (let i = 0; i < indices.length; i++) {
+            var button_to_change = document.getElementById('{"index":"' + indices[i] + '","type":"select-region"}');
+            if (n_clicks === undefined || n_clicks % 2 == 0) {
+                button_to_change.innerHTML = "Zaznacz";
+                button_to_change.style.backgroundColor = "#36ba3d";
+            }
+            else {
+                button_to_change.innerHTML = "Ukryj";
+                button_to_change.style.backgroundColor = "#de4545";
+            }
+        }
+        return 0;
+    }
+    """,
+    [Output("empty3", "children")],
+    [
+        Input('show-top-x-button', 'n_clicks'),
+    ],
+    [
+        State('show-top-x-interval', 'value'),
+        State('region_numbers_sorted_by_metric', 'children'),
+    ]
+)
+app.clientside_callback(
+    """
+    function change_buttons_bottom(n_clicks, percentage, sorted_regions) {
+        if (sorted_regions === null || sorted_regions === undefined) {
+            return 0;
+        }
+        indices = sorted_regions.slice(sorted_regions.length - Math.cail(percentage/100*sorted_regions.length), sorted_regions.length);
+        for (let i = 0; i < indices.length; i++) {
+            var button_to_change = document.getElementById('{"index":"' + indices[i] + '","type":"select-region"}');
+            if (n_clicks === undefined || n_clicks % 2 == 0) {
+                button_to_change.innerHTML = "Zaznacz";
+                button_to_change.style.backgroundColor = "#36ba3d";
+            }
+            else {
+                button_to_change.innerHTML = "Ukryj";
+                button_to_change.style.backgroundColor = "#de4545";
+            }
+        }
+        return 0;
+    }
+    """,
+    [Output("empty4", "children")],
+    [
+        Input('show-bottom-x-button', 'n_clicks'),
+    ],
+    [
+        State('show-bottom-x-interval', 'value'),
+        State('region_numbers_sorted_by_metric', 'children'),
+    ]
+)
+
 
 @app.callback(
     [
@@ -697,10 +759,10 @@ def multi_select_region(values, selectedindices, selectedregion, buttonindices, 
             try:
                 eval_result = eval(triggered["prop_id"].split(".")[0])
                 clicked_region = eval_result["index"]
-                if clicked_region in buttonindices:
-                    buttonindices.remove(clicked_region)
+                if int(clicked_region) in buttonindices:
+                    buttonindices.remove(int(clicked_region))
                 else:
-                    buttonindices.append(clicked_region)
+                    buttonindices.append(int(clicked_region))
                 if selectedregion is None:
                     output_indices = buttonindices
                 else:
