@@ -78,8 +78,8 @@ def build_map(metric, options, schools_options, selceted_region):
                                  zmin=0,
                                  marker={'opacity': 0.5},
                                  featureidkey="properties.index",
-                                 selected={'marker': {'opacity': 0.7}},
-                                 unselected={'marker': {'opacity': 0.2}},
+                                 selected={'marker': {'opacity': 0.8}},
+                                 unselected={'marker': {'opacity': 0.1}},
                                  showscale=False,
                                  selectedpoints=selceted_region, below=False)
         fig.add_choroplethmapbox(colorscale='Balance', geojson=rejony_borders, customdata=customdata,
@@ -91,8 +91,8 @@ def build_map(metric, options, schools_options, selceted_region):
                                  marker={'opacity': 0.5},
                                  featureidkey="properties.index",
                                  showscale=True,
-                                 selected={'marker': {'opacity': 0.7}},
-                                 unselected={'marker': {'opacity': 0.2}},
+                                 selected={'marker': {'opacity': 0.8}},
+                                 unselected={'marker': {'opacity': 0.1}},
                                  selectedpoints=selceted_region, below=False)
 
     

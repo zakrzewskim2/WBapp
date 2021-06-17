@@ -210,7 +210,7 @@ def generate_table(df_dict, width, name=""):
     )], style={
         'width': width,
         'height': '93%',
-        'overflow-y': 'scroll',
+        'overflow-y': 'auto',
         'overflow': 'scroll',
         'margin': '0px 5px 0px 0px'
     }
@@ -478,12 +478,13 @@ app.layout = html.Div(
                                            html.Div(
                                                children=[
                                                    html.Div(
-                                                       html.Plaintext(
-                                                           "Informacje o przystankach",
+                                                       html.Button(
+                                                           "Wyświetl informacje o przystankach",
                                                            style={
                                                                'font': '14pt Arial Black',
                                                                'margin': "0px 0px 0px 15px",
-                                                           }
+                                                           },
+                                                           id="stops-info-button"
                                                        )
                                                    ),
                                                    html.Div(
@@ -499,18 +500,21 @@ app.layout = html.Div(
                                                    'border': '1px solid black',
                                                    'float': 'left',
                                                    'width': '50%',
-                                                   'height': '100%'
+                                                   'height': '100%',
+                                                #    'overflow-y': "auto",
+                                                #    'overflow-x': "auto"
                                                }
                                            ),
                                            html.Div(
                                                children=[
                                                    html.Div(
-                                                       html.Plaintext(
-                                                           "Informacje o szkołach",
+                                                       html.Button(
+                                                           "Wyświetl informacje o szkołach",
                                                            style={
                                                                'font': '14pt Arial Black',
                                                                'margin': "0px 0px 0px 15px",
-                                                           }
+                                                           },
+                                                           id="schools-info-button"
                                                        )
                                                    ),
                                                    html.Div(
@@ -527,7 +531,9 @@ app.layout = html.Div(
                                                    'border': '1px solid black',
                                                    'float': 'left',
                                                    'width': '50%',
-                                                   'height': '100%'
+                                                   'height': '100%',
+                                                #    'overflow-y': "auto",
+                                                #    'overflow-x': "auto"
                                                }
                                            )
                                        ],
@@ -648,61 +654,10 @@ app.clientside_callback(
     ]
 )
 
-
-# @app.callback(
-#     [
-#         Output('selected-region-indices', 'children'),
-#         Output('selected-button-indices', 'children')
-#     ],
-#     [
-#         Input({'type': 'select-region', 'index': ALL}, 'n_clicks'),
-#         Input('selected-region-indices', 'children'),
-#         Input('map', 'selectedData'),
-#         Input('selected-button-indices', 'children')
-#     ])
-# def select_region(values, selectedindices, selectedregion, buttonindices):
-#     if selectedindices == '':
-#         selectedindices = []
-#     if buttonindices == '':
-#         buttonindices = []
-#     ctx = dash.callback_context
-#     # selected_region = [item['location'] for item in selectedregion['points']]
-#     if selectedregion is None:
-#         output_indices = buttonindices
-#     else:
-#         selected_region_indices = [item['pointIndex']
-#                                    for item in selectedregion['points']]
-#         output_indices = list(
-#             set(selected_region_indices).union(set(buttonindices)))
-
-#     if not ctx.triggered:
-#         return output_indices, buttonindices
-#     else:
-#         if len(values) > 0 and values == [None]*len(values):
-#             return output_indices, buttonindices
-#         for triggered in ctx.triggered:
-#             eval_result = eval(triggered["prop_id"].split(".")[0])
-#             if type(eval_result) == dict:
-#                 clicked_region = eval_result["index"]
-#                 if clicked_region in buttonindices:
-#                     buttonindices.remove(clicked_region)
-#                 else:
-#                     buttonindices.append(clicked_region)
-#                 if selectedregion is None:
-#                     output_indices = buttonindices
-#                 else:
-#                     selected_region_indices = [item['pointIndex']
-#                                                for item in selectedregion['points']]
-#                     output_indices = list(
-#                         set(selected_region_indices).union(set(buttonindices)))
-#                 return output_indices, buttonindices
-#             else:
-#                 return output_indices, buttonindices
-
 @app.callback(
     [
         Output('selected-region-indices', 'children'),
-        Output('selected-button-indices', 'children')
+        Output('selected-button-indices', 'children'),
     ],
     [
         Input({'type': 'select-region', 'index': ALL}, 'n_clicks'),
@@ -762,21 +717,20 @@ def multi_select_region(values, selectedindices, selectedregion, buttonindices, 
                         output_indices = list(
                             set(output_indices).union(set(buttonindices)))
                     else:
-                        selected_top_regions = list(np.array(sorted_rejony)[
-                                                    :int(top_threshold/100*len(sorted_rejony))])
+                        selected_top_regions = list(np.array(sorted_rejony)[:int(top_threshold/100*len(sorted_rejony))])
                         buttonindices = [
                             elem for elem in buttonindices if elem not in selected_top_regions]
                         output_indices = [
                             elem for elem in output_indices if elem not in selected_top_regions]
+                    
                 if triggered["prop_id"].split(".")[0] == "show-bottom-x-button":
                     if bottom_n_clicks % 2 == 1:
                         buttonindices = list(set(buttonindices).union(
-                            set(np.array(sorted_rejony)[int(bottom_threshold/100*len(sorted_rejony)):])))
+                            set(np.array(sorted_rejony)[-int(bottom_threshold/100*len(sorted_rejony))-1:])))
                         output_indices = list(
                             set(output_indices).union(set(buttonindices)))
                     else:
-                        selected_top_regions = list(np.array(sorted_rejony)[
-                                                    int(bottom_threshold/100*len(sorted_rejony)):])
+                        selected_top_regions = list(np.array(sorted_rejony)[-int(bottom_threshold/100*len(sorted_rejony))-1:])
                         buttonindices = [
                             elem for elem in buttonindices if elem not in selected_top_regions]
                         output_indices = [
@@ -787,9 +741,6 @@ def multi_select_region(values, selectedindices, selectedregion, buttonindices, 
 @ app.callback(
     [
         Output('map', 'figure'),
-        Output('schools-info-table', 'children'),
-        Output('stops-info-table', 'children'),
-        Output('all_button_ids', 'children'),
         Output('histogram', 'figure')
     ],
     [
@@ -804,53 +755,11 @@ def multi_select_region(values, selectedindices, selectedregion, buttonindices, 
         Input('widelki-selection', 'children')
     ])
 def update_map(metric, metric_weight, metric_type, metric_time, metric_thresholds, options, schools_options, selceted_region, widelki_string):
-    stops = {}
-    schools = {}
     stop_numbers = []
-    new_button_ids = []
     for i in selceted_region:
-        reg_num = "Rejon numer: " + str(i)
-        try:
-            stops[reg_num] = {}
-            for stop in stops_in_rejon[str(i)]:
-                stop_numbers.append(int(stop))
-                stops[reg_num][stop] = {}
-                stop_df = stops_info.loc[stops_info["Unnamed: 0"] == str(
-                    int(stop))]
-                if stop_df.empty:
-                    stops[reg_num][stop]["Nazwa"] = f"N/A (numer {stop})"
-                    stops[reg_num][stop]["Numer"] = "N/A"
-                    stops[reg_num][stop]["Linie"] = {}
-                    continue
-                stops[reg_num][stop]["Nazwa"] = stop_df["name"].values[0]
-                new_button_ids.append("button_id_" + stop_df["name"].values[0])
-                stops[reg_num][stop]["Numer"] = stop_df["Unnamed: 0"].values[0]
-                stops[reg_num][stop]["Linie"] = {}
-                for k, v in ast.literal_eval(stop_df["lines"].values[0]).items():
-                    linia_num = "Linia numer: " + str(k)
-                    stops[reg_num][stop]["Linie"][linia_num] = {}
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"] = {}
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Nazwa"] = k
-                    new_button_ids.append(
-                        "button_id_" + k + stop_df["name"].values[0])
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Typ"] = v["type"]
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Godziny odjazdu"] = v["hours"]
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Odjazd z przystanku"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
-                        v["direction_from"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"] == str(v["direction_from"])]["name"].values[0]
-                    stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Kierunek"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
-                        v["direction_to"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"] == str(v["direction_to"])]["name"].values[0]
-        except:
-            stops[reg_num] = {}
-        try:
-            schools[reg_num] = {}
-            for school in schools_in_rejon[str(i)]:
-                schools[reg_num][school] = schools_with_progi.loc[schools_with_progi["Numer szkoły"]
-                                                                  == school].squeeze()
-                new_button_ids.append(
-                    "button_id_" + schools_with_progi.loc[schools_with_progi["Numer szkoły"] == school]["Nazwa"].values[0])
-        except:
-            schools[reg_num] = {}
-
+            if str(i) in stops_in_rejon:
+                for stop in stops_in_rejon[str(i)]:
+                    stop_numbers.append(int(stop))
     widelki = np.array([]) if widelki_string is None else np.array(
         eval(widelki_string))
     widelki_labels = gen_widelki_labels(widelki)
@@ -907,7 +816,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
 
     selected_metric = "_".join(["metric", metric, metric_type, metric_time]) if metric == "percentage_metric" else "_".join(
         ["metric", metric, metric_type, metric_weight, metric_thresholds])
-    return build_map(selected_metric, options, schools_options, selceted_region), generate_table(schools, "99%"), generate_table(stops, "99%"), new_button_ids, fig
+    return build_map(selected_metric, options, schools_options, selceted_region), fig #, generate_table(schools, "99%"), generate_table(stops, "99%"), new_button_ids, fig
 
 
 @app.callback(
@@ -956,6 +865,77 @@ def display_dojazdy_table(n_click, selceted_region):
     df["No."] += 1
     return generate_static_table(df), {"display": "block"}
 
+@ app.callback(
+    [
+        Output('schools-info-table', 'children'),
+        Output('schools-info-table', 'style'),
+        Output('stops-info-table', 'children'),
+        Output('stops-info-table', 'style'),
+        Output('all_button_ids', 'children'),
+    ],
+    [
+        Input('schools-info-button', 'n_clicks'),
+        Input('stops-info-button', 'n_clicks'),
+    ],
+    [
+        State('selected-region-indices', 'children'),
+    ])
+def display_schools_stops_table(schools_n_click, stops_n_click, selceted_region):
+    stops = {}
+    schools = {}
+    stop_numbers = []
+    new_button_ids = []
+    stops_display, schools_display = {"display": "block"}, {"display": "block"}
+    for i in selceted_region:
+        reg_num = "Rejon numer: " + str(i)
+        if stops_n_click is not None and stops_n_click % 2 == 1:
+            try:
+                stops[reg_num] = {}
+                for stop in stops_in_rejon[str(i)]:
+                    stop_numbers.append(int(stop))
+                    stops[reg_num][stop] = {}
+                    stop_df = stops_info.loc[stops_info["Unnamed: 0"] == str(
+                        int(stop))]
+                    if stop_df.empty:
+                        stops[reg_num][stop]["Nazwa"] = f"N/A (numer {stop})"
+                        stops[reg_num][stop]["Numer"] = "N/A"
+                        stops[reg_num][stop]["Linie"] = {}
+                        continue
+                    stops[reg_num][stop]["Nazwa"] = stop_df["name"].values[0]
+                    new_button_ids.append("button_id_" + stop_df["name"].values[0])
+                    stops[reg_num][stop]["Numer"] = stop_df["Unnamed: 0"].values[0]
+                    stops[reg_num][stop]["Linie"] = {}
+                    for k, v in ast.literal_eval(stop_df["lines"].values[0]).items():
+                        linia_num = "Linia numer: " + str(k)
+                        stops[reg_num][stop]["Linie"][linia_num] = {}
+                        stops[reg_num][stop]["Linie"][linia_num]["Informacje"] = {}
+                        stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Nazwa"] = k
+                        new_button_ids.append(
+                            "button_id_" + k + stop_df["name"].values[0])
+                        stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Typ"] = v["type"]
+                        stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Godziny odjazdu"] = v["hours"]
+                        stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Odjazd z przystanku"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
+                            v["direction_from"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"] == str(v["direction_from"])]["name"].values[0]
+                        stops[reg_num][stop]["Linie"][linia_num]["Informacje"]["Kierunek"] = "Poza granicami Warszawy" if not stops_info.loc[stops_info["Unnamed: 0"] == str(
+                            v["direction_to"])]["name"].values else stops_info.loc[stops_info["Unnamed: 0"] == str(v["direction_to"])]["name"].values[0]
+            except:
+                stops[reg_num] = {}
+        else:
+            stops_display = {"display": "none"}
+        if schools_n_click is not None and schools_n_click % 2 == 1:
+            try:
+                schools[reg_num] = {}
+                for school in schools_in_rejon[str(i)]:
+                    schools[reg_num][school] = schools_with_progi.loc[schools_with_progi["Numer szkoły"]
+                                                                    == school].squeeze()
+                    new_button_ids.append(
+                        "button_id_" + schools_with_progi.loc[schools_with_progi["Numer szkoły"] == school]["Nazwa"].values[0])
+            except:
+                schools[reg_num] = {}
+        else:
+            schools_display = {"display": "none"}
+    print(stops)
+    return generate_table(schools, "99%"), schools_display, generate_table(stops, "99%"), stops_display, new_button_ids
 
 @app.callback(
     Output('schools-filters', 'style'),
@@ -977,10 +957,22 @@ def filter_update(selected_filters):
     [
         Input('show-top-x-interval', 'value'),
         Input('show-bottom-x-interval', 'value'),
+        Input('show-top-x-button', 'n_clicks'),
+        Input('show-bottom-x-button', 'n_clicks'),
     ])
-def change_button_threshold(top, bottom):
-
-    return f'Zaznacz górne {top}% rejonów', f'Zaznacz dolne {bottom}% rejonów'
+def change_button_threshold(top, bottom, top_clicks, bottom_clicks):
+    if top_clicks is None:
+        top_clicks = 0
+    if bottom_clicks is None:
+        bottom_clicks = 0
+    if top_clicks % 2 == 0 and bottom_clicks % 2 ==0:
+        return f'Zaznacz górne {top}% rejonów', f'Zaznacz dolne {bottom}% rejonów'
+    elif top_clicks % 2 == 0 and bottom_clicks % 2 == 1:
+        return f'Zaznacz górne {top}% rejonów', f'Odznacz dolne {bottom}% rejonów'
+    elif top_clicks % 2 == 1 and bottom_clicks % 2 == 0:
+        return f'Odznacz górne {top}% rejonów', f'Zaznacz dolne {bottom}% rejonów'
+    elif top_clicks % 2 == 1 and bottom_clicks % 2 == 1:
+        return f'Odznacz górne {top}% rejonów', f'Odznacz dolne {bottom}% rejonów'
 
 
 @app.callback(
