@@ -304,8 +304,7 @@ app.layout = html.Div(
                                html.Div(children=[
                                    html.Div(
                                     id="metric-values-table",
-                                    style={"width": "400px", "height": "75%",
-                                           "overflow-x": "auto", "overflow-y": "auto"}
+                                    style={"width": "400px", "flexGrow": "1", "overflow": "auto"}
                                     ),
                                    html.Div(children=[
                                        html.Div(
@@ -363,8 +362,8 @@ app.layout = html.Div(
                                                    ], style={"margin": "10px 0px 10px 0px"}
                                                )]
                                        )
-                                   ], style={"width": "400px", "height": "20%", "textAlign": "center", "overflow" : "auto"}
-                                   )]),
+                                   ], style={"height": "30%", "minHeight" : "150px", "width" : "400px"}
+                                   )], style={"display": "flex", "flexDirection": "column", "height" : "100%", "width" : "400px"}),
                                html.Div(
                                    children=[
                                        dcc.Graph(
@@ -377,7 +376,7 @@ app.layout = html.Div(
                                            style={"height": "100%"},
                                        ),
                                        html.Div(id="output")
-                                   ], style={'max-height': '100%', 'width': '40%', "margin": "0px 0px 0px 20px"}
+                                   ], style={'max-height': '100%', 'width': '60%', "margin": "0px 0px 0px 20px"}
                                ),
                                html.Div(children=[
                                    html.Plaintext(id='hist-interval-output', style={
@@ -410,10 +409,10 @@ app.layout = html.Div(
                                                'modeBarButtonsToRemove': ['select2d', 'lasso2d'],
                                                'scrollZoom': False
                                            },
-                                           style={"height": "100%", "width" : "350px"},
+                                           style={"height": "100%", "width" : "100%"},
                                        )
-                                   ], style={"overflow" : "auto"})
-                               ], style={"flex-grow": "1", "display": "flex", "flex-direction": "column", "width" : "350px", "align-items": "center"})
+                                   ], style={"overflow" : "auto", "width" : "100%", "minHeight" : "50%"})
+                               ], style={"flex-grow": "1", "display": "flex", "flex-direction": "column", "width" : "40%", "minWidth" : "300px", "align-items": "center"})
 
                            ], style={"height": "60%", "display": "flex"}
                            ),
@@ -860,7 +859,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
     unique = new_unique
 
     fig = go.Figure([go.Bar(x=[widelki_labels[u] for u in unique], y=counts)])
-    fig.update_layout(margin=dict(l=15, r=15, t=15, b=15),)
+    fig.update_layout(margin=dict(l=15, r=15, t=20, b=15),)
 
     if len(dojazdy) > 0:
         dojazdy_no_inf = dojazdy
