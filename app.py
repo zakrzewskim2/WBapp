@@ -363,7 +363,7 @@ app.layout = html.Div(
                                                    ], style={"margin": "10px 0px 10px 0px"}
                                                )]
                                        )
-                                   ], style={"width": "400px", "height": "20%", "textAlign": "center"}
+                                   ], style={"width": "400px", "height": "20%", "textAlign": "center", "overflow" : "auto"}
                                    )]),
                                html.Div(
                                    children=[
@@ -410,10 +410,10 @@ app.layout = html.Div(
                                                'modeBarButtonsToRemove': ['select2d', 'lasso2d'],
                                                'scrollZoom': False
                                            },
-                                           style={"height": "100%"},
+                                           style={"height": "100%", "width" : "350px"},
                                        )
-                                   ])
-                               ], style={"flex-grow": "1", "display": "flex", "flex-direction": "column", "align-items": "center"})
+                                   ], style={"overflow" : "auto"})
+                               ], style={"flex-grow": "1", "display": "flex", "flex-direction": "column", "width" : "350px", "align-items": "center"})
 
                            ], style={"height": "60%", "display": "flex"}
                            ),
