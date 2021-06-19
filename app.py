@@ -362,7 +362,7 @@ app.layout = html.Div(
                                                    ], style={"margin": "10px 0px 10px 0px"}
                                                )]
                                        )
-                                   ], style={"height": "30%", "minHeight" : "150px", "width" : "400px"}
+                                   ], style={"height": "30%", "minHeight" : "150px", "width" : "400px", "textAlign" : "center"}
                                    )], style={"display": "flex", "flexDirection": "column", "height" : "100%", "width" : "400px"}),
                                html.Div(
                                    children=[
@@ -401,7 +401,7 @@ app.layout = html.Div(
                                            # tooltip = { 'placement': 'bottom' }
                                        ), style={"width": "100%"}
                                    ),
-
+                                    html.Div(style={"flexGrow": "1"}),
                                    html.Div(children=[
                                        dcc.Graph(
                                            id='histogram',
@@ -411,7 +411,8 @@ app.layout = html.Div(
                                            },
                                            style={"height": "100%", "width" : "100%"},
                                        )
-                                   ], style={"overflow" : "auto", "width" : "100%", "minHeight" : "50%"})
+                                   ], style={"overflow" : "auto", "width" : "100%", "minHeight" : "50%"}),
+                                   html.Div(style={"flexGrow": "1"}),
                                ], style={"flex-grow": "1", "display": "flex", "flex-direction": "column", "width" : "40%", "minWidth" : "300px", "align-items": "center"})
 
                            ], style={"height": "60%", "display": "flex"}
@@ -689,7 +690,7 @@ app.clientside_callback(
         if (sorted_regions === null || sorted_regions === undefined) {
             return 0;
         }
-        indices = sorted_regions.slice(sorted_regions.length - Math.cail(percentage/100*sorted_regions.length), sorted_regions.length);
+        indices = sorted_regions.slice(sorted_regions.length - Math.ceil(percentage/100*sorted_regions.length), sorted_regions.length);
         for (let i = 0; i < indices.length; i++) {
             var button_to_change = document.getElementById('{"index":"' + indices[i] + '","type":"select-region"}');
             if (n_clicks === undefined || n_clicks % 2 == 0) {
@@ -818,11 +819,11 @@ def multi_select_region(values, selectedindices, selectedregion, buttonindices, 
 def update_map(metric, metric_weight, metric_type, metric_time, metric_thresholds, options, schools_options, selceted_region, widelki_string):
     stop_numbers = []
     for i in selceted_region:
-            if str(i) in stops_in_rejon:
-                for stop in stops_in_rejon[str(i)]:
-                    stop_numbers.append(int(stop))
-    widelki = np.array([]) if widelki_string is None else np.array(
-        eval(widelki_string))
+        if str(i) in stops_in_rejon:
+            for stop in stops_in_rejon[str(i)]:
+                stop_numbers.append(int(stop))
+
+    widelki = np.array([]) if widelki_string is None else np.array(eval(widelki_string))
     widelki_labels = gen_widelki_labels(widelki)
 
     if metric_type != 'ALL':
@@ -830,14 +831,12 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
         for part in metric_type.split('-'):
             school_types += SCHOOL_TYPE_MAPPING[part]
 
-        dojazdy_merged_filtered = dojazdy_merged.loc[np.isin(
-            dojazdy_merged.Typ, school_types)]
+        dojazdy_merged_filtered = dojazdy_merged.loc[np.isin(dojazdy_merged.Typ, school_types)]
     else:
         dojazdy_merged_filtered = dojazdy_merged
 
     if len(selceted_region) > 0:
-        dojazdy = np.array(dojazdy_merged_filtered.loc[np.isin(
-            dojazdy_merged_filtered.source_stop, stop_numbers)]["TOTAL_LEN"])
+        dojazdy = np.array(dojazdy_merged_filtered.loc[np.isin(dojazdy_merged_filtered.source_stop, stop_numbers)]["TOTAL_LEN"])
     else:
         dojazdy = np.array(dojazdy_merged_filtered["TOTAL_LEN"])
 
