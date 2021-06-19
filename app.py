@@ -936,11 +936,12 @@ def display_dojazdy_table(n_click, selceted_region):
     [
         Input('schools-info-button', 'n_clicks'),
         Input('stops-info-button', 'n_clicks'),
+        Input('metric-school-type', 'value'),
     ],
     [
         State('selected-region-indices', 'children'),
     ])
-def display_schools_stops_table(schools_n_click, stops_n_click, selceted_region):
+def display_schools_stops_table(schools_n_click, stops_n_click, school_type, selceted_region):
     stops = {}
     schools = {}
     stop_numbers = []
@@ -986,8 +987,9 @@ def display_schools_stops_table(schools_n_click, stops_n_click, selceted_region)
             try:
                 schools[reg_num] = {}
                 for school in schools_in_rejon[str(i)]:
-                    schools[reg_num][school] = schools_with_progi.loc[schools_with_progi["Numer szkoły"]
-                                                                    == school].squeeze()
+                    if school_type != 'ALL' and schools_with_progi.loc[schools_with_progi["Numer szkoły"] == school]["Typ"].values[0] not in SCHOOL_TYPE_MAPPING[school_type]:
+                        continue
+                    schools[reg_num][school] = schools_with_progi.loc[schools_with_progi["Numer szkoły"] == school].squeeze()
                     new_button_ids.append(
                         "button_id_" + schools_with_progi.loc[schools_with_progi["Numer szkoły"] == school]["Nazwa"].values[0])
             except:
@@ -1006,7 +1008,6 @@ def filter_update(selected_filters):
         return {'display': 'block'}
     else:
         return {'display': 'none'}
-
 
 @app.callback(
     [
@@ -1032,7 +1033,6 @@ def change_button_threshold(top, bottom, top_clicks, bottom_clicks):
         return f'Odznacz górne {top}% rejonów', f'Zaznacz dolne {bottom}% rejonów'
     elif top_clicks % 2 == 1 and bottom_clicks % 2 == 1:
         return f'Odznacz górne {top}% rejonów', f'Odznacz dolne {bottom}% rejonów'
-
 
 @app.callback(
     [
@@ -1060,7 +1060,6 @@ def metric_update(selected_metric):
             {'width': 170, 'display': 'inline-block',
              'verticalAlign': "middle", 'textAlign': "left"}
 
-
 @app.callback(
     [
         Output('hist-interval-output', 'children'),
@@ -1072,7 +1071,6 @@ def metric_update(selected_metric):
 def change_interval(hist_interval):
     values = list(range(0, 120, hist_interval))[1:] + [120]
     return f'Podziałka histogramu: {hist_interval} minut', str(values)
-
 
 @app.callback(
     [
