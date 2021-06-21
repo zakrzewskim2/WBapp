@@ -68,8 +68,7 @@ METRIC_SCHOOL_TYPE_MAPPING = [
     {'label': 'liceów ogólnokształcących', 'value': 'LIC'},
     {'label': 'techników', 'value': 'TEC'},
     {'label': 'szkół zawodowych', 'value': 'ZAW'},
-    {'label': 'szkół podstawowych i zawodowych oraz liceów i techników',
-        'value': 'POD-LIC-ZAW-TEC'},
+    {'label': 'szkół podstawowych i zawodowych oraz liceów i techników','value': 'POD-LIC-ZAW-TEC'},
     {'label': 'szkół artystycznych', 'value': 'MUZ'},
     {'label': 'przedszkoli', 'value': 'PRZ'},
     {'label': 'szkół podstawowych i liceów', 'value': 'POD-LIC'},
@@ -291,7 +290,13 @@ app.layout = html.Div(
                                            {'label': 'Licea ogólnokształcące',
                                             'value': 'school_lic'},
                                            {'label': 'Szkoły techniczne',
-                                            'value': 'school_tech'}
+                                            'value': 'school_tech'},
+                                            {'label': 'Szkoły zawodowe',
+                                            'value': 'school_zaw'},
+                                            {'label': 'Szkoły artystyczne',
+                                            'value': 'school_art'},
+                                            {'label': 'Przedszkola',
+                                            'value': 'kindergardens'}
                                        ],
                                        value=['all']
                                    )

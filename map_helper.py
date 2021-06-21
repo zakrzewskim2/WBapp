@@ -35,7 +35,7 @@ def build_map(metric, options, schools_options, selceted_region):
     gray_colorscale = [[0, 'gray'],
                     [1, 'gray']]
 
-    num_of_traces_to_add_for_some_reason = 6
+    num_of_traces_to_add_for_some_reason = 9
     fig = go.Figure()
 
     if "percentage" in metric:
@@ -136,6 +136,56 @@ def build_map(metric, options, schools_options, selceted_region):
                 num_of_traces_to_add_for_some_reason-=1
             if 'school_tech' in schools_options:
                 selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Technikum"]["Numer szkoły"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+                num_of_traces_to_add_for_some_reason-=1
+            if 'school_zaw' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[np.isin(schools_with_progi.Typ, ['Branżowa szkoła I stopnia',
+                               'Placówka Kształcenia Ustawicznego - bez szkół',
+                               'Placówka Kształcenia Ustawicznego ze szkołami',
+                               'Centrum Kształcenia Zawodowego',
+                               'Bednarska Szkoła Realna',
+                               'Branżowa szkoła II stopnia'])]["Numer szkoły"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+                num_of_traces_to_add_for_some_reason-=1
+            if 'school_art' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[np.isin(schools_with_progi.Typ,['Szkoła muzyczna I stopnia',
+                               'Szkoła muzyczna II stopnia',
+                               'Ogólnokształcąca szkoła muzyczna II stopnia',
+                               'Ogólnokształcąca szkoła muzyczna I stopnia',
+                               'Inna szkoła artystyczna',
+                               'Ogólnokształcąca szkoła baletowa',
+                               'Placówki artystyczne (ognisko artystyczne)',
+                               'Liceum sztuk plastycznych'])]["Numer szkoły"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+                num_of_traces_to_add_for_some_reason-=1
+            if 'kindergardens' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[np.isin(schools_with_progi.Typ,['Przedszkole',
+                               'Punkt przedszkolny',
+                               'Zespół wychowania przedszkolnego'])]["Numer szkoły"]))]
                 fig.add_scattermapbox(
                 lat=selected_schools['lat'],
                 lon=selected_schools['lon'],
