@@ -33,6 +33,9 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'stops_in_rejon.json'), encoding='
 with open(os.path.join(THIS_FOLDER, 'assets', 'schools_in_rejon.json'), encoding='utf8') as json_file:
     schools_in_rejon = json.load(json_file)
 
+with open(os.path.join(THIS_FOLDER, 'assets', 'veturillo_in_rejon.json'), encoding='utf8') as json_file:
+    veturillo_in_rejon = json.load(json_file)
+
 schools_with_progi = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
 
@@ -804,7 +807,6 @@ def multi_select_region(values, selectedindices, selectedregion, buttonindices, 
                             elem for elem in output_indices if elem not in selected_top_regions]
                 return output_indices, buttonindices
 
-
 @ app.callback(
     [
         Output('map', 'figure'),
@@ -883,7 +885,6 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
         ["metric", metric, metric_type, metric_weight, metric_thresholds])
     return build_map(selected_metric, options, schools_options, selceted_region), fig #, generate_table(schools, "99%"), generate_table(stops, "99%"), new_button_ids, fig
 
-
 @app.callback(
     [
         Output('dojazdy-info-table', 'children'),
@@ -904,9 +905,10 @@ def display_dojazdy_table(n_click, selceted_region):
             return html.Div("Brak informacji"), {"display": "block"}
         for stop in stops_in_rejon[str(i)]:
             stop_numbers.append(int(stop))
-
-    dojazdy = dojazdy_info.loc[np.isin(
-        dojazdy_info.source_stop, stop_numbers)].sort_values("TOTAL_LEN")
+        for veturillo in veturillo_in_rejon[str(i)]:
+            stop_numbers.append(int(veturillo))
+            
+    dojazdy = dojazdy_info.loc[np.isin(dojazdy_info.source_stop, stop_numbers)].sort_values("TOTAL_LEN")
     best_lens = dojazdy.groupby("school")["TOTAL_LEN"].min().rename(
         "best_len").reset_index(drop=False)
     dojazdy = dojazdy.merge(best_lens, on="school")
