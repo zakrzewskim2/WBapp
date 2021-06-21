@@ -268,7 +268,9 @@ app.layout = html.Div(
                                            {'label': 'Szkoły',
                                             'value': 'schools'},
                                            {'label': 'Metro',
-                                            'value': 'subway'}
+                                            'value': 'subway'},
+                                           {'label': 'Stacje Veturilo',
+                                            'value': 'veturilo'}
                                        ],
                                        value=[]
                                    )
@@ -907,7 +909,7 @@ def display_dojazdy_table(n_click, selceted_region):
             stop_numbers.append(int(stop))
         for veturillo in veturillo_in_rejon[str(i)]:
             stop_numbers.append(int(veturillo))
-            
+
     dojazdy = dojazdy_info.loc[np.isin(dojazdy_info.source_stop, stop_numbers)].sort_values("TOTAL_LEN")
     best_lens = dojazdy.groupby("school")["TOTAL_LEN"].min().rename(
         "best_len").reset_index(drop=False)

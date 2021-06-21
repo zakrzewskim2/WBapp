@@ -14,6 +14,9 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'rejony_in_warsaw_indexed.geojson'
 with open(os.path.join(THIS_FOLDER, 'assets', 'raw_node_pos.json'), encoding='utf8') as file:
     stops_pos = pd.read_json(file).transpose()
 
+with open(os.path.join(THIS_FOLDER, 'assets', 'veturilo_positition.json'), encoding='utf8') as file:
+    veturilo_pos = pd.read_json(file).transpose()
+
 with open(os.path.join(THIS_FOLDER, 'assets', 'stops_in_rejon.json'), encoding='utf8') as json_file:
     stops_in_rejon = json.load(json_file)
 
@@ -35,7 +38,7 @@ def build_map(metric, options, schools_options, selceted_region):
     gray_colorscale = [[0, 'gray'],
                     [1, 'gray']]
 
-    num_of_traces_to_add_for_some_reason = 9
+    num_of_traces_to_add_for_some_reason = 10
     fig = go.Figure()
 
     if "percentage" in metric:
@@ -225,6 +228,21 @@ def build_map(metric, options, schools_options, selceted_region):
         )
         num_of_traces_to_add_for_some_reason-=1
     
+    if "veturilo" in options:
+        fig.add_scattermapbox(
+            lat=veturilo_pos[0],
+            lon=veturilo_pos[1],
+            showlegend=False,
+            hoverinfo='skip',
+            marker=go.scattermapbox.Marker(
+                color="yellow"
+            ),
+            
+        )
+        num_of_traces_to_add_for_some_reason-=1
+
+
+
     for i in range(num_of_traces_to_add_for_some_reason):
         fig.add_scattermapbox()
 
