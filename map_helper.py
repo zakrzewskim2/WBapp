@@ -1,3 +1,4 @@
+#%%
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
@@ -13,35 +14,42 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'rejony_in_warsaw_indexed.geojson'
 with open(os.path.join(THIS_FOLDER, 'assets', 'raw_node_pos.json'), encoding='utf8') as file:
     stops_pos = pd.read_json(file).transpose()
 
+with open(os.path.join(THIS_FOLDER, 'assets', 'veturilo_positition.json'), encoding='utf8') as file:
+    veturilo_pos = pd.read_json(file).transpose()
+
 with open(os.path.join(THIS_FOLDER, 'assets', 'stops_in_rejon.json'), encoding='utf8') as json_file:
     stops_in_rejon = json.load(json_file)
 
 schools_in_rejon = pd.read_csv(os.path.join(
-    THIS_FOLDER, 'assets', 'schools_in_rejon.csv'))
+    THIS_FOLDER, 'assets', 'schools_in_rejon.csv'), index_col=0)
 
-access_mm = pd.read_csv("assets/metrics/access_mm.csv")
-access_pdwc = pd.read_csv("assets/metrics/access_pdwc.csv")
+schools_with_progi = pd.read_csv(os.path.join(
+    THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
 
+access_metrics = {}
 
-def build_map(metric, options, selceted_region):
-    if metric == "mm":
-        access = access_mm
-    else:
-        access = access_pdwc
+for t in os.listdir(os.path.join(THIS_FOLDER, 'assets/metrics')):
+    access_metrics[t[:-4]] = pd.read_csv(os.path.join(THIS_FOLDER, 'assets/metrics', t)) 
+#%%
+def build_map(metric, options, schools_options, selceted_region):
 
+    access = access_metrics[metric]
 
     gray_colorscale = [[0, 'gray'],
                     [1, 'gray']]
+
+    num_of_traces_to_add_for_some_reason = 10
     fig = go.Figure()
 
-    if metric != "mm":
+    if "percentage" in metric:
         str_access = access.assign(accessibility_index = np.where(access.accessibility_index == -1, "n/a", (access.accessibility_index*100).round(2).astype(str) + "%"))
     else:
         str_access = access.assign(accessibility_index = np.where(access.accessibility_index == -1, "n/a", (access.accessibility_index).round(3).astype(str)))
     access_true = access.assign(accessibility_index = np.where(access.accessibility_index == -1, None, access.accessibility_index))
     access_false = access.assign(accessibility_index = np.where(access.accessibility_index == -1, access.accessibility_index, None))
     customdata = str_access[['index', 'accessibility_index']]
-    hover_text = "Dostępność komunikacyjna: " if metric=="mm" else "Procent dostępnych szkół: "
+    #print(metric)
+    hover_text = "Dostępność komunikacyjna: " if 'new_metric' in metric else "Procent dostępnych szkół: "
     hovertemplate = 'Rejon %{customdata[0]}<br>' + \
                     hover_text + '<b>%{customdata[1]}</b><br>' + "<extra></extra>"
 
@@ -54,7 +62,8 @@ def build_map(metric, options, selceted_region):
                                  zmin=0,
                                  showscale=False,
                                  featureidkey="properties.index",
-                                 marker={'opacity': 0.7}, below=True)
+                                 marker={'opacity': 0.7}, below=False,
+                                 )
         fig.add_choroplethmapbox(colorscale='Balance', geojson=rejony_borders, customdata=customdata,
                                  hovertemplate=hovertemplate,
                                  locations=access_true["index"],
@@ -62,7 +71,7 @@ def build_map(metric, options, selceted_region):
                                  zmax=np.max(access_true["accessibility_index"]),
                                  zmin=0,
                                  featureidkey="properties.index",
-                                 showscale=True, marker={'opacity': 0.7}, below=True)
+                                 showscale=True, marker={'opacity': 0.7}, below=False)
     else:
         fig.add_choroplethmapbox(colorscale=gray_colorscale, geojson=rejony_borders, customdata=customdata,
                                  hovertemplate=hovertemplate,
@@ -72,10 +81,10 @@ def build_map(metric, options, selceted_region):
                                  zmin=0,
                                  marker={'opacity': 0.5},
                                  featureidkey="properties.index",
-                                 selected={'marker': {'opacity': 0.7}},
-                                 unselected={'marker': {'opacity': 0.2}},
+                                 selected={'marker': {'opacity': 0.8}},
+                                 unselected={'marker': {'opacity': 0.1}},
                                  showscale=False,
-                                 selectedpoints=selceted_region, below=True)
+                                 selectedpoints=selceted_region, below=False)
         fig.add_choroplethmapbox(colorscale='Balance', geojson=rejony_borders, customdata=customdata,
                                  hovertemplate=hovertemplate,
                                  locations=access_true["index"],
@@ -85,9 +94,126 @@ def build_map(metric, options, selceted_region):
                                  marker={'opacity': 0.5},
                                  featureidkey="properties.index",
                                  showscale=True,
-                                 selected={'marker': {'opacity': 0.7}},
-                                 unselected={'marker': {'opacity': 0.2}},
-                                 selectedpoints=selceted_region, below=True)
+                                 selected={'marker': {'opacity': 0.8}},
+                                 unselected={'marker': {'opacity': 0.1}},
+                                 selectedpoints=selceted_region, below=False)
+
+    
+    if "schools" in options:
+        if 'all' in schools_options:
+            selected_schools = schools_in_rejon
+            fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+            )
+            num_of_traces_to_add_for_some_reason-=1
+        else:
+            if 'school_lic' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Liceum ogólnokształcące"]["Numer szkoły"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+                num_of_traces_to_add_for_some_reason-=1
+            if 'school_podst' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Szkoła podstawowa"]["Numer szkoły"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+                num_of_traces_to_add_for_some_reason-=1
+            if 'school_tech' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[schools_with_progi.Typ == "Technikum"]["Numer szkoły"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+                num_of_traces_to_add_for_some_reason-=1
+            if 'school_zaw' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[np.isin(schools_with_progi.Typ, ['Branżowa szkoła I stopnia',
+                               'Placówka Kształcenia Ustawicznego - bez szkół',
+                               'Placówka Kształcenia Ustawicznego ze szkołami',
+                               'Centrum Kształcenia Zawodowego',
+                               'Bednarska Szkoła Realna',
+                               'Branżowa szkoła II stopnia'])]["Numer szkoły"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+                num_of_traces_to_add_for_some_reason-=1
+            if 'school_art' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[np.isin(schools_with_progi.Typ,['Szkoła muzyczna I stopnia',
+                               'Szkoła muzyczna II stopnia',
+                               'Ogólnokształcąca szkoła muzyczna II stopnia',
+                               'Ogólnokształcąca szkoła muzyczna I stopnia',
+                               'Inna szkoła artystyczna',
+                               'Ogólnokształcąca szkoła baletowa',
+                               'Placówki artystyczne (ognisko artystyczne)',
+                               'Liceum sztuk plastycznych'])]["Numer szkoły"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+                num_of_traces_to_add_for_some_reason-=1
+            if 'kindergardens' in schools_options:
+                selected_schools = schools_in_rejon.loc[np.isin(schools_in_rejon["Numer szkoły"], np.array(schools_with_progi.loc[np.isin(schools_with_progi.Typ,['Przedszkole',
+                               'Punkt przedszkolny',
+                               'Zespół wychowania przedszkolnego'])]["Numer szkoły"]))]
+                fig.add_scattermapbox(
+                lat=selected_schools['lat'],
+                lon=selected_schools['lon'],
+                showlegend=False,
+                hoverinfo='skip',
+                marker=go.scattermapbox.Marker(
+                    color="blue"
+                    )
+                )
+                num_of_traces_to_add_for_some_reason-=1
+    if "subway" in options:
+        subway_pos = stops_pos.iloc[np.where(
+            stops_pos.index.astype(str).str.zfill(4).str.startswith("0"))]
+        fig.add_scattermapbox(
+            lat=subway_pos[1],
+            lon=subway_pos[0],
+            showlegend=False,
+            hoverinfo='skip',
+            marker=go.scattermapbox.Marker(
+                color="black"
+            ),
+            
+        )
+        num_of_traces_to_add_for_some_reason-=1
+    
     if "stops" in options:
         if "subway" in options:
             stops = stops_pos.iloc[np.where(~stops_pos.index.astype(
@@ -100,45 +226,25 @@ def build_map(metric, options, selceted_region):
             showlegend=False,
             hoverinfo='skip'
         )
-
-    if "schools" in options:
+        num_of_traces_to_add_for_some_reason-=1
+    
+    if "veturilo" in options:
         fig.add_scattermapbox(
-            lat=schools_in_rejon['lat'],
-            lon=schools_in_rejon['lon'],
+            lat=veturilo_pos[0],
+            lon=veturilo_pos[1],
             showlegend=False,
             hoverinfo='skip',
             marker=go.scattermapbox.Marker(
-                color="blue"
+                color="yellow"
             ),
+            
         )
-    if "subway" in options:
-        subway_pos = stops_pos.iloc[np.where(
-            stops_pos.index.astype(str).str.zfill(4).str.startswith("0"))]
-        fig.add_scattermapbox(
-            lat=subway_pos[1],
-            lon=subway_pos[0],
-            showlegend=False,
-            hoverinfo='skip',
-            marker=go.scattermapbox.Marker(
-                color="black"
-            ),
-        )
+        num_of_traces_to_add_for_some_reason-=1
 
-    # for i, color in zip([black_indexes, white_indexes], ["black", "white"]):
-    #     fig.add_scattermapbox(
-    #         lat=df.lat[i],
-    #         lon=df.lon[i],
-    #         mode='text',
-    #         text=label_text[i],
-    #         textfont={
-    #             "color": color,
-    #             "family": 'Verdana, sans-serif',
-    #             "size": 12,
-    #         },
-    #         name='',
-    #         showlegend=False,
-    #         hoverinfo='skip'
-    #     )
+
+
+    for i in range(num_of_traces_to_add_for_some_reason):
+        fig.add_scattermapbox()
 
     fig.update_layout(
         margin={"r": 0, "t": 0, "l": 0, "b": 35},
@@ -147,7 +253,7 @@ def build_map(metric, options, selceted_region):
             bearing=0,
             center=go.layout.mapbox.Center(
                 lat=52.2297,
-                lon=21.0122
+                lon=21.0622
             ),
             pitch=0,
             zoom=10
