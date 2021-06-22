@@ -894,11 +894,12 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
     ],
     [
         Input('dojazdy-info-button', 'n_clicks'),
+        Input('metric-school-type', 'value'),
     ],
     [
         State('selected-region-indices', 'children')
     ])
-def display_dojazdy_table(n_click, selceted_region):
+def display_dojazdy_table(n_click, school_type, selceted_region):
     if n_click is None or n_click % 2 == 0:
         return html.Div(), {"display": "none"}
     stop_numbers = []
@@ -915,7 +916,11 @@ def display_dojazdy_table(n_click, selceted_region):
         "best_len").reset_index(drop=False)
     dojazdy = dojazdy.merge(best_lens, on="school")
     df = dojazdy.loc[dojazdy.TOTAL_LEN == dojazdy.best_len]
-    df = df.merge(schools_with_progi, left_on="school",
+    if school_type == "ALL":
+        df = df.merge(schools_with_progi, left_on="school",
+                  right_on="Numer szkoły")
+    else:
+        df = df.merge(schools_with_progi.loc[np.isin(schools_with_progi.Typ, SCHOOL_TYPE_MAPPING[school_type])], left_on="school",
                   right_on="Numer szkoły")
     df = df.merge(stops_name_info, left_on="source_stop", right_on="number")
     df = df.merge(stops_name_info, left_on="best_end_stop",
