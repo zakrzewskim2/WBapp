@@ -33,8 +33,8 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'stops_in_rejon.json'), encoding='
 with open(os.path.join(THIS_FOLDER, 'assets', 'schools_in_rejon.json'), encoding='utf8') as json_file:
     schools_in_rejon = json.load(json_file)
 
-with open(os.path.join(THIS_FOLDER, 'assets', 'veturillo_in_rejon.json'), encoding='utf8') as json_file:
-    veturillo_in_rejon = json.load(json_file)
+# with open(os.path.join(THIS_FOLDER, 'assets', 'veturillo_in_rejon.json'), encoding='utf8') as json_file:
+#     veturillo_in_rejon = json.load(json_file)
 
 schools_with_progi = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
@@ -907,8 +907,8 @@ def display_dojazdy_table(n_click, selceted_region):
             return html.Div("Brak informacji"), {"display": "block"}
         for stop in stops_in_rejon[str(i)]:
             stop_numbers.append(int(stop))
-        for veturillo in veturillo_in_rejon[str(i)]:
-            stop_numbers.append(int(veturillo))
+        # for veturillo in veturillo_in_rejon[str(i)]:
+        #     stop_numbers.append(int(veturillo))
 
     dojazdy = dojazdy_info.loc[np.isin(dojazdy_info.source_stop, stop_numbers)].sort_values("TOTAL_LEN")
     best_lens = dojazdy.groupby("school")["TOTAL_LEN"].min().rename(
