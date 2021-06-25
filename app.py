@@ -569,7 +569,7 @@ app.layout = html.Div(
                                                ),
                                                html.A(
                                                     id="download",
-                                                    download="file_name.csv",
+                                                    download="dojazdy_inf.csv",
                                                     style={"float" : "right"}
                                                 ),
                                                 dcc.Store("dojazdy-csv-store")
