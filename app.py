@@ -23,6 +23,9 @@ import base64
 import json
 import math
 import ast
+from io import StringIO
+import csv
+import base64
 
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
@@ -555,7 +558,7 @@ app.layout = html.Div(
                                        }),
                                    html.Div(
                                        children=[
-                                           html.Div(
+                                           html.Div([
                                                html.Button(
                                                    "Wyświetl informacje dojazdowe",
                                                    style={
@@ -563,8 +566,14 @@ app.layout = html.Div(
                                                                'margin': "0px 0px 0px 15px",
                                                    },
                                                    id="dojazdy-info-button"
-                                               )
-                                           ),
+                                               ),
+                                               html.A(
+                                                    id="download",
+                                                    download="file_name.csv",
+                                                    style={"float" : "right"}
+                                                ),
+                                                dcc.Store("dojazdy-csv-store")
+                                            ], style={"display": "flex", "flex-direction":"row", "justify-content" : "space-between"}),
                                            html.Div(
                                                id="dojazdy-info-table",
                                                style={
@@ -613,12 +622,44 @@ app.layout = html.Div(
 
 app.clientside_callback(
     """
+function(the_store_data) {
+    var t = the_store_data.split('\\n');
+    var s = t[0].split(/\s+/).join(",").replaceAll("_"," ") + '\\n';
+    s = s.substring(1);
+    for(let i=1; i < t.length; i++) {
+        var row = t[i].split(/\s{2,}/).join(",") + '\\n';
+        if(row.startsWith(',') || row.startsWith(' ')){
+            s += row.substring(1);
+        }
+        else {
+            s += row;
+        }
+    }
+    let b = new Blob([s],{type: 'text/csv;charset=utf-8;'});
+    let url = URL.createObjectURL(b);
+    return url;
+}
+""",
+    Output("download", "href"),
+    [Input("dojazdy-csv-store", "data")],
+)
+
+
+@app.callback(
+    Output('download','children'),
+    [Input('download','href')]
+)
+def update_download_children(_): # we probably won't use the href
+    # fill the children with a download button
+    return html.Button(id='download-button', style={"background-image" : "url('assets/csv-file.svg')", "width" : "30px", "height" : "30px", "background-color": "transparent",  "border": "none"})
+
+app.clientside_callback(
+    """
     function setup_stuff(ids) {
         for (let i = 0; i < ids.length; i++) {
             var collapse_button = document.getElementById("collapse_button_" + ids[i].substring(10));
             collapse_button.addEventListener("click", collapse, false);
         }
-        console.log("asd")
         return 0;
     }
     function collapse(event) {
@@ -890,7 +931,8 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
 @app.callback(
     [
         Output('dojazdy-info-table', 'children'),
-        Output('dojazdy-info-table', 'style')
+        Output('dojazdy-info-table', 'style'),
+        Output("dojazdy-csv-store", "data")
     ],
     [
         Input('dojazdy-info-button', 'n_clicks'),
@@ -901,7 +943,7 @@ def update_map(metric, metric_weight, metric_type, metric_time, metric_threshold
     ])
 def display_dojazdy_table(n_click, school_type, selceted_region):
     if n_click is None or n_click % 2 == 0:
-        return html.Div(), {"display": "none"}
+        return html.Div(), {"display": "none"}, ""
     stop_numbers = []
     for i in selceted_region:
         if str(i) not in stops_in_rejon:
@@ -937,7 +979,9 @@ def display_dojazdy_table(n_click, school_type, selceted_region):
     df = df.reset_index(drop=True).reset_index(
         drop=False).rename(columns={"index": "No."})
     df["No."] += 1
-    return generate_static_table(df), {"display": "block"}
+    dfto_stringify = df
+    dfto_stringify.columns = [colname.replace(" ", "_") for colname in df.columns]
+    return generate_static_table(df), {"display": "block"}, dfto_stringify.to_string(index=False) 
 
 @ app.callback(
     [
