@@ -18,14 +18,8 @@ from plotly.graph_objs.layout import Margin
 from map_helper import build_map
 import os
 from joblib import load
-import visdcc
-import base64
 import json
-import math
 import ast
-from io import StringIO
-import csv
-import base64
 
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
@@ -36,8 +30,8 @@ with open(os.path.join(THIS_FOLDER, 'assets', 'stops_in_rejon.json'), encoding='
 with open(os.path.join(THIS_FOLDER, 'assets', 'schools_in_rejon.json'), encoding='utf8') as json_file:
     schools_in_rejon = json.load(json_file)
 
-# with open(os.path.join(THIS_FOLDER, 'assets', 'veturillo_in_rejon.json'), encoding='utf8') as json_file:
-#     veturillo_in_rejon = json.load(json_file)
+with open(os.path.join(THIS_FOLDER, 'assets', 'veturillo_in_rejon.json'), encoding='utf8') as json_file:
+    veturillo_in_rejon = json.load(json_file)
 
 schools_with_progi = pd.read_csv(os.path.join(
     THIS_FOLDER, 'assets', 'schools_with_progi.csv'))
@@ -67,6 +61,15 @@ dojazdy_merged = schools_with_progi_Num_Type.merge(
     dojazdy_info, left_on='Numer szkoły', right_on='school')
 
 button_names = []
+# #%%
+# sir = [item for sublist in schools_in_rejon.values() for item in sublist]
+# st = [float(item) for sublist in stops_in_rejon.values() for item in sublist]
+# vt = [float(item) for sublist in veturillo_in_rejon.values() for item in sublist]
+# st.extend(vt)
+# di = dojazdy_info.loc[np.isin(dojazdy_info.school, sir)]
+# dis = di.loc[np.isin(di.source_stop, st)]
+# dis = dis.loc[np.isin(dis.best_end_stop, st)]
+# dis.to_csv("assets/best_stats_new.csv")
 # %%
 METRIC_SCHOOL_TYPE_MAPPING = [
     {'label': 'dowolnych szkół', 'value': 'ALL'},
@@ -946,12 +949,13 @@ def display_dojazdy_table(n_click, school_type, selceted_region):
         return html.Div(), {"display": "none"}, ""
     stop_numbers = []
     for i in selceted_region:
-        if str(i) not in stops_in_rejon:
-            return html.Div("Brak informacji"), {"display": "block"}
-        for stop in stops_in_rejon[str(i)]:
-            stop_numbers.append(int(stop))
-        # for veturillo in veturillo_in_rejon[str(i)]:
-        #     stop_numbers.append(int(veturillo))
+        if str(i) in stops_in_rejon:
+            #return html.Div("Brak informacji"), {"display": "block"}
+            for stop in stops_in_rejon[str(i)]:
+                stop_numbers.append(int(stop))
+        if str(i) in veturillo_in_rejon:
+            for veturillo in veturillo_in_rejon[str(i)]:
+                stop_numbers.append(int(veturillo))
 
     dojazdy = dojazdy_info.loc[np.isin(dojazdy_info.source_stop, stop_numbers)].sort_values("TOTAL_LEN")
     best_lens = dojazdy.groupby("school")["TOTAL_LEN"].min().rename(
@@ -965,12 +969,15 @@ def display_dojazdy_table(n_click, school_type, selceted_region):
         df = df.merge(schools_with_progi.loc[np.isin(schools_with_progi.Typ, SCHOOL_TYPE_MAPPING[school_type])], left_on="school",
                   right_on="Numer szkoły")
     df = df.merge(stops_name_info, left_on="source_stop", right_on="number")
-    df = df.merge(stops_name_info, left_on="best_end_stop",
-                  right_on="number", how="left")
-    df = df[["Nazwa", "name_x", "name_y", "PUBLIC", "WALK", "WAIT", "GETON", "LEN", "WALK_TO_SCHOOL", "TOTAL_LEN"]] \
+    df = df.merge(stops_name_info, left_on="best_end_stop", right_on="number", how="left")
+    df.loc[df.source_stop > 10000000, "name_x"] = "Punkt Veturilo"
+    df.loc[df.best_end_stop > 10000000, "name_y"] = "Punkt Veturilo"
+
+    df = df[["Nazwa", "name_x", "name_y", "PUBLIC", "WALK", "WAIT", "GETON", "LEN", "WALK_TO_SCHOOL", "TOTAL_LEN", "BIKE", "ONBIKE", "OFFBIKE"]] \
         .rename(columns={"Nazwa": "Nazwa szkoły", "name_x": "Najlepszy przystanek początkowy", "name_y": "Najlepszy przystanek końcowy",
                          "TOTAL_LEN": "Całkowita długość dojazdu", "LEN": "Czas dojazdu do przystanku końcowego", "PUBLIC": "Przejazdy komunikacją miejską",
-                         "WALK": "Przejścia piesze", "WAIT": "Czas oczekiwania", "GETON": "Rezerwa na przesiadki", "WALK_TO_SCHOOL": "Czas dojścia do szkoły z przystanku końcowego"})
+                         "WALK": "Przejścia piesze", "WAIT": "Czas oczekiwania", "GETON": "Rezerwa na przesiadki", "WALK_TO_SCHOOL": "Czas dojścia do szkoły z przystanku końcowego",
+                         "BIKE": "Czas podróży rowerem", "ONBIKE" : "Czas wypożyczania roweru", "OFFBIKE" : "Czas odstawiania roweru"})
     df = df.sort_values("Całkowita długość dojazdu")
     df.fillna("n/a", inplace=True)
     df = pd.DataFrame(np.where(df == np.inf, "n/a", df), columns=df.columns)
@@ -979,7 +986,7 @@ def display_dojazdy_table(n_click, school_type, selceted_region):
     df = df.reset_index(drop=True).reset_index(
         drop=False).rename(columns={"index": "No."})
     df["No."] += 1
-    dfto_stringify = df
+    dfto_stringify = df.copy()
     dfto_stringify.columns = [colname.replace(" ", "_") for colname in df.columns]
     return generate_static_table(df), {"display": "block"}, dfto_stringify.to_string(index=False) 
 
